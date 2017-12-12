@@ -1,0 +1,6 @@
+@font-face {
+    font-family: 'Segment7Standard';
+    src: url('../static/7seg_font/Segment7Standard.otf') format('opentype');
+    font-weight: normal;
+    font-style: italic;
+}

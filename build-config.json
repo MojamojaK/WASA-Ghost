@@ -1,0 +1,40 @@
+{
+	"appId": "com.electronghost.com",
+	"directories":{
+		"buildResources": "build",
+		"output": "dist"
+	},
+	"win":{
+		"target": [
+			{
+				"target": "nsis",
+				"arch": ["x64"]
+			}
+		],
+		"icon": "build/icon.ico"
+	},
+	"nsis": {
+		"installerIcon": "build/icon.ico",
+		"uninstallerIcon": "build/icon.ico",
+		"oneClick": false,
+		"allowToChangeInstallationDirectory": true
+	},
+	"mac": {
+		"target": [
+			{
+				"target": "dmg",
+				"arch": ["x64"]
+			}
+		],
+		"icon": "build/icon.icns"
+	},
+	"linux":{
+		"target": [
+			{
+				"target": "AppImage",
+				"arch": ["x64"]
+			}
+		]
+	},
+	"npmRebuild": true
+}
