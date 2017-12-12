@@ -62,6 +62,3 @@ typings/
 
 # 各インストーラーの無視
 dist/
-
-# 各モジュールの無視
-node_modules/
