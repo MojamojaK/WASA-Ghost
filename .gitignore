@@ -57,3 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
+# mac ds_store no sync
+.DS_Store
+
+# 各インストーラーの無視
+dist/
