@@ -64,5 +64,6 @@ typings/
 dist/
 
 ._package.json
+._package-lock.json
 
 ._.gitignore
