@@ -62,3 +62,7 @@ typings/
 
 # 各インストーラーの無視
 dist/
+
+._package.json
+
+._.gitignore
