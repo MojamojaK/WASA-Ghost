@@ -10,7 +10,7 @@ Ghost is a BADASS Telemetry Monitor Application for Waseda Aeronautics and Space
 
 [Node.js](https://nodejs.org/) must be installed for development.
 
-#### Setup
+#### - Setup
 
 1. Open terminal for UNIX Systems or Command Prompt for Windows
 
@@ -44,7 +44,7 @@ All codes should be implemented in the **src** directory.
 
 Build resources such as application icons should be in the **build** directory.
 
-#### Building
+#### - Building
 
 Run the commands below for each platform.
 
