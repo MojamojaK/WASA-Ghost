@@ -20,7 +20,7 @@
     "build_linux": "./node_modules/.bin/electron-builder --linux --x64 --config=build-config.json"
   },
   "author": "Kazuki Fujita <kazukifu@gmail.com>",
-  "license": "SEE LICENSE IN <filename>",
+  "license": "UNLICENSED",
   "devDependencies": {
     "electron": "^1.8.1",
     "electron-packager": "^10.1.0",
