@@ -14,7 +14,7 @@ Ghost is a BADASS Telemetry Monitor Application for Waseda Aeronautics and Space
 
 1. Open terminal for UNIX Systems or Command Prompt for Windows
 
-2. Simply clone this repository to your computer. You may have to [install git](https://git-scm.com/downloads) or [GitHub Desktop](https://desktop.github.com). Since this is a private repository, you may also be required to enter your GitHub username and password.
+2. Simply clone this repository to your computer. You may have to [install git](https://git-scm.com/downloads) or [GitHub Desktop](https://desktop.github.com). Since this is a private repository, you may also have to enter your GitHub username and password.
 
 ```bash
 $ git clone https://github.com/MojamojaK/ghost.git
