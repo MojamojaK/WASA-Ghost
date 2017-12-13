@@ -27,7 +27,7 @@ $ npm install
 
 4. If you are on Windows, install [windows-build-tools](https://www.npmjs.com/package/windows-build-tools) to allow python use of npm. This enables rebuilding from source for the [serialport](https://www.npmjs.com/package/serialport) module.
 ```bash
-$ npm --add-python-to-path=‘true’ --debug install --global windows-build-tools
+$ npm --add-python-to-path='true' --debug install --global windows-build-tools
 ```
 
 5. Run rebuild command. This rebuilds all plaftorm native packages to become compatible to [Electron](https://electronjs.org).
