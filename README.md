@@ -52,6 +52,8 @@ Since codes are left unsigned, Operating Systems may initially reject installati
 
 Building Configurations should be in **build-config.json** . See [electron-builder](https://www.electron.build).
 
+Built installers will be put in the **dist** directory
+
 ##### Windows
 This will build a nsis installer for Windows 64bit.
 
