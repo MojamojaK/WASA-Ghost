@@ -1,26 +1,32 @@
-class Clock extends EventEmitter {};
-const clock = new Clock();
+class Clock extends EventEmitter {
 
-function setup_clock(){
-	let freq_count = 0;
+  constructor(dateNode, timeNode, freqNode){
+    super()
+    this.dateNode = dateNode
+    this.timeNode = timeNode
+    this.freqNode = freqNode
+    this.freqCount = 0
+    this.timeout = undefined
+    displayTime()
+    this.on('update', updateFreq)
+  }
 
-	function display_time(){
-		let d = new Date();
-		date_node.html(d.toLocaleDateString());
-		time_node.html(d.toLocaleTimeString());
-		setTimeout(display_time, 1000 - d % 1000);
-		freq_node.html(freq_count + "Hz");
-		freq_count = 0;
-	}
-	display_time();
+  displayTime(){
+    let d = new Date();
+    this.dateNode.html(d.toLocaleDateString());
+    this.timeNode.html(d.toLocaleTimeString());
+    setTimeout(displayTime, 1000 - d % 1000);
+    this.freqNode.html(this.freqCount + "Hz");
+    this.freqCount = 0;
+  }
 
-	let timeout;
-	function update_freq(){
-		clearTimeout(timeout);
-		freq_node.css({backgroundColor: "green"});
-		timeout = setTimeout(function(){freq_node.css({backgroundColor: "black"});}, 1000);
-		freq_count++;
-	}
+  updateFreq(){
+    clearTimeout(this.timeout)
+    this.freqNode.css({backgroundColor: "green"})
+    this.timeout = setTimeout(function() {
+      this.freqNode.css({backgroundColor: "black"})
+    }, 1000)
+    this.freqCount++;
+  }
 
-	clock.on('update', update_freq);
 }

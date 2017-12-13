@@ -21,32 +21,32 @@ submenu_help.append(new MenuItem({label: 'Learn More', click () { Electron.shell
 
 
 if (process.platform === 'darwin') {
-	let submenu_app = new Menu();
-	submenu_app.append(new MenuItem({role: 'about'}));
-	submenu_app.append(new MenuItem({type: 'separator'}));
-	submenu_app.append(new MenuItem({role: 'services', submenu: []}));
-	submenu_app.append(new MenuItem({type: 'separator'}));
-	submenu_app.append(new MenuItem({role: 'hideothers'}));
-	submenu_app.append(new MenuItem({role: 'unhide'}));
-	submenu_app.append(new MenuItem({type: 'separator'}));
-	submenu_app.append(new MenuItem({role: 'quit'}));
-	menu.append(new MenuItem({label: 'Ghost', submenu: submenu_app}));
+  let submenu_app = new Menu();
+  submenu_app.append(new MenuItem({role: 'about'}));
+  submenu_app.append(new MenuItem({type: 'separator'}));
+  submenu_app.append(new MenuItem({role: 'services', submenu: []}));
+  submenu_app.append(new MenuItem({type: 'separator'}));
+  submenu_app.append(new MenuItem({role: 'hideothers'}));
+  submenu_app.append(new MenuItem({role: 'unhide'}));
+  submenu_app.append(new MenuItem({type: 'separator'}));
+  submenu_app.append(new MenuItem({role: 'quit'}));
+  menu.append(new MenuItem({label: 'Ghost', submenu: submenu_app}));
 
-	let submenu_speech = new Menu();
-	submenu_speech.append(new MenuItem({role: 'startspeaking'}));
-	submenu_speech.append(new MenuItem({role: 'stopspeaking'}));
-	submenu_edit.append(new MenuItem({type: 'separator'}));
-	submenu_edit.append(new MenuItem({label: 'Speech', submenu: submenu_speech}));
+  let submenu_speech = new Menu();
+  submenu_speech.append(new MenuItem({role: 'startspeaking'}));
+  submenu_speech.append(new MenuItem({role: 'stopspeaking'}));
+  submenu_edit.append(new MenuItem({type: 'separator'}));
+  submenu_edit.append(new MenuItem({label: 'Speech', submenu: submenu_speech}));
 
-	submenu_window.append(new MenuItem({role: 'close'}));
-	submenu_window.append(new MenuItem({role: 'minimize'}));
-	submenu_window.append(new MenuItem({role: 'zoom'}));
-	submenu_window.append(new MenuItem({type: 'separator'}));
-	submenu_window.append(new MenuItem({role: 'front'}));
+  submenu_window.append(new MenuItem({role: 'close'}));
+  submenu_window.append(new MenuItem({role: 'minimize'}));
+  submenu_window.append(new MenuItem({role: 'zoom'}));
+  submenu_window.append(new MenuItem({type: 'separator'}));
+  submenu_window.append(new MenuItem({role: 'front'}));
 }
 else{
-	submenu_window.append(new MenuItem({role: 'minimize'}));
-	submenu_window.append(new MenuItem({role: 'close'}));
+  submenu_window.append(new MenuItem({role: 'minimize'}));
+  submenu_window.append(new MenuItem({role: 'close'}));
 }
 
 menu.append(new MenuItem({label: 'Edit', submenu: submenu_edit}));
