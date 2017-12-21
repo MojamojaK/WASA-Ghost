@@ -1,42 +1,43 @@
-class SpeechEvent extends EventEmitter {};
-const speech_event = new SpeechEvent();
+const EventEmitter = require('events')
+const synth = window.speechSynthesis   // 喋らせるライブラリ (現在Macのみ対応) */
 
-function speak(str){};
+module.exports.Speech = class Speech extends EventEmitter {
+  constructor (iconNode, statusNode, toggleNode, speechObject) {
+    super()
+    if (process.platform === 'darwin') {
+      this.iconNode = iconNode
+      this.statusNode = statusNode
+      this.toggleNode = toggleNode
+      this.speechObject = speechObject
+      this.enabled = false
+      this.interval = null
+      let tmpSpeech = this
+      this.toggleNode.on('click', function () { tmpSpeech.toggleSpeech() })
+    } else {
+      console.log('invalid platform for speech')
+    }
+  }
 
-function setup_speech() {
-	if (process.platform === 'darwin'){
-		function _speak(str, delay){
-			speech_event.emit('speak', str, delay);
-		}
-		speak = _speak;
-		function say(str, delay){
-			if (delay == undefined){
-				synth.speak(new SpeechSynthesisUtterance(str));
-			}
-			else{
-				setTimeout(function(){synth.speak(new SpeechSynthesisUtterance(str))}, delay);
-			}
-		}
+  toggleSpeech () {
+    this.enabled = !this.enabled
+    if (this.enabled) {
+      this.iconNode.attr('src', 'static/speech-on.png')
+      this.statusNode.html('Speech Enabled')
+      let tmpSpeech = this
+      this.interval = setInterval(function () { tmpSpeech.sayValue() }, 1500)
+    } else {
+      clearInterval(this.interval)
+      this.iconNode.attr('src', 'static/speech-off.png')
+      this.statusNode.html('Speech Disabled')
+    }
+  }
 
-		function say_cadence(){
-			speak(cadence_info.value)
-		}
-		speech_event.on('speak', say);
-		let speech_enabled = false;
-		let interval;
-		function toggle_speech(){
-			speech_enabled = !speech_enabled;
-			if (speech_enabled){
-				speech_icon_node.attr('src', 'static/speech-on.png');
-				speech_status_node.html('Speech Enabled');
-				interval = setInterval(say_cadence, 1500);
-			}
-			else{
-				clearInterval(interval);
-				speech_icon_node.attr('src', 'static/speech-off.png');
-				speech_status_node.html('Speech Disabled');
-			}
-		}
-		speech_toggle_node.on('click', toggle_speech);
-	}
+  speak (str, delay) {
+    if (delay === undefined) synth.speak(new SpeechSynthesisUtterance(str))
+    else setTimeout(function () { synth.speak(new SpeechSynthesisUtterance(str)) }, delay)
+  }
+
+  sayValue () {
+    this.speak(this.speechObject.value)
+  }
 }

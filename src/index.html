@@ -7,20 +7,6 @@
 		<link media='screen' href='stylesheets/fonts.css' type='text/css' rel='stylesheet' />
 		<link href='stylesheets/mapbox-gl.css' rel='stylesheet' />
 		<link href='stylesheets/ghost_style.css' rel='stylesheet'/>
-		<script src='scripts/requires.js'></script>
-		<script src='scripts/constants.js'></script>
-		<script src='scripts/map.js'></script>
-		<script src='scripts/clock.js'></script>
-		<script src='scripts/gauge.js'></script>
-		<script src='scripts/meter.js'></script>
-		<script src='scripts/orientation.js'></script>
-		<script src='scripts/graphics.js'></script>
-		<script src='scripts/serial.js'></script>
-		<script src='scripts/logging.js'></script>
-		<script src='scripts/secret.js'></script>
-		<script src='scripts/speech.js'></script>
-		<script src='scripts/debugger.js'></script>
-		<script src='scripts/menu.js'></script>
 		<script src='scripts/setup.js'></script>
 	</head>
 	<body>
@@ -107,39 +93,38 @@
 
 			<div class='main_inner' style='width:50%;'>
 				<div id='map'>
-					<div id='map_dragdrop'>
+					<div id='mapDragDrop'>
 						<div id='dragdrop_layover'>Loading...</div>
 					</div>
 				</div>
 				<div id='propertyList'></div>
 				<div id='ypr'>
 					<div class='ypr' id='pitch'>
-						<img class='ypr_plane' id='pitch_plane' src='static/pitch.png' alt='ERR'>
+						<img class='ypr_plane' id='pitchPlane' src='static/pitch.png' alt='ERR'>
 					</div>
 					<div class='ypr' id='roll'>
-						<img class='ypr_plane' id='roll_plane' src='static/roll.png' alt='ERR'>
+						<img class='ypr_plane' id='rollPlane' src='static/roll.png' alt='ERR'>
 					</div>
 					<div class='ypr' id='yaw'>
 						<img class='ypr_plane' src='static/compass.png' alt='T'>
-						<img class='ypr_plane' id='yaw_plane' src='static/heading.png' alt='ERR'>
+						<img class='ypr_plane' id='yawPlane' src='static/heading.png' alt='ERR'>
 					</div>
 				</div>
 				<div id='altitude'>
-					<div class='meter' id='altitude_meter'></div>
-					<div class='meter_line' id='altitude_meter_line'></div>
-					<div class='arrow arrow-right pink' id='altitude_meter_arrow'>
-						<div class='arrow-value arrow-value-right pink' id='altitude_meter_value'>0</div>
+					<div class='meter' id='altitudeMeter'></div>
+					<div class='meter-line' id='altitudeMeterLine'></div>
+					<div class='arrow arrow-right pink' id='altitudeMeterArrow'>
+						<div class='arrow-value arrow-value-right pink' id='altitudeMeterValue'>0</div>
 					</div>
-					<div id='altitude_value'></div>
 				</div>
 				<div id='speed'>
-					<div class='meter' id='speed_meter'></div>
-					<div class='meter_line' id='speed_meter_line'></div>
-					<div class='arrow arrow-left light_blue' id='air_speed_meter_arrow'>
-						<div class='arrow-value arrow-value-left light_blue' id='air_speed_meter_value'>0</div>
+					<div class='meter' id='speedMeter'></div>
+					<div class='meter-line' id='speedMeterLine'></div>
+					<div class='arrow arrow-left light-blue' id='airSpeedMeterArrow'>
+						<div class='arrow-value arrow-value-left light-blue' id='airSpeedMeterValue'>0</div>
 					</div>
-					<div class='arrow arrow-left green' id='ground_speed_meter_arrow'>
-						<div class='arrow-value arrow-value-left green' id='ground_speed_meter_value'>0</div>
+					<div class='arrow arrow-left green' id='groundSpeedMeterArrow'>
+						<div class='arrow-value arrow-value-left green' id='groundSpeedMeterValue'>0</div>
 					</div>
 				</div>
 			</div>
@@ -147,39 +132,39 @@
 			<div	class='main_inner vert_wrapper' style='background:black; width:20%;'>
 				<div class='vert_inner grey vert_wrapper' id='cadence' style='height:25%'>
 					<div class='vert_inner grey-bottom center-object' style='height:7.5%; font-size:1.75vmin; cursor: default; '>Cadence</div>
-					<div class='vert_inner grey gauge' id='cadence_gauge' style='height:85%; border-style:hidden;'>
-							<canvas class='gauge_outline' id='cadence_gauge_outline'> </canvas>
-							<div class='gauge_center' id='cadence_gauge_center'></div>
-							<div class='gauge_needle' id='cadence_gauge_needle'></div>
-							<div id='cadence_value'>0</div>
+					<div class='vert_inner grey gauge' id='cadenceGauge' style='height:85%; border-style:hidden;'>
+							<canvas class='gauge-outline' id='cadenceGaugeOutline'> </canvas>
+							<div class='gauge_center' id='cadenceGaugeCenter'></div>
+							<div class='gauge_needle' id='cadenceGaugeNeedle'></div>
+							<div id='cadenceValue'>0</div>
 					</div>
 				</div>
 				<div class='vert_inner grey vert_wrapper' id='rudder' style='height:37.5%'>
 					<div class='vert_inner grey-bottom center-object' style='height:5%; font-size:1.75vmin; cursor: default;'>Rudder</div>
 					<div class='vert_inner grey-bottom servo_info' style='height:10%;'>
-						<div class='hori_inner text_display' id='rud_temp'>30</div>
-						<div class='hori_inner text_display' id='rud_load'>0</div>
-						<div class='hori_inner text_display' id='rud_volt'>11.1</div>
+						<div class='hori_inner text_display' id='rudderTemp'>30</div>
+						<div class='hori_inner text_display' id='rudderLoad'>0</div>
+						<div class='hori_inner text_display' id='rudderVolt'>11.1</div>
 					</div>
-					<div class='vert_inner grey gauge' id='rudder_gauge' style='height:85%; border-style:hidden;'>
-						<canvas class='gauge_outline' id='rudder_gauge_outline'> </canvas>
-						<div class='gauge_center servo_gauge_center' id='rudder_gauge_center'></div>
-						<div class='gauge_needle servo_gauge_needle' id='rudder_gauge_needle'></div>
-						<div class='servo_value' id='rudder_value'>0.0</div>
+					<div class='vert_inner grey gauge' id='rudderGauge' style='height:85%; border-style:hidden;'>
+						<canvas class='gauge-outline' id='rudderGaugeOutline'> </canvas>
+						<div class='gauge_center servo_gauge_center' id='rudderGaugeCenter'></div>
+						<div class='gauge_needle servo_gauge_needle' id='rudderGaugeNeedle'></div>
+						<div class='servo_value' id='rudderValue'>0.0</div>
 					</div>
 				</div>
 				<div class='vert_inner grey vert_wrapper' id='elevator' style='height:37.5%'>
 					<div class='vert_inner grey-bottom center-object' style='height:5%; font-size:1.75vmin; cursor: default; '>Elevator</div>
 					<div class='vert_inner grey-bottom servo_info' style='height:10%;'>
-						<div class='hori_inner text_display' id='ele_temp'>30</div>
-						<div class='hori_inner text_display' id='ele_load'>0</div>
-						<div class='hori_inner text_display' id='ele_volt'>11.1</div>
+						<div class='hori_inner text_display' id='elevatorTemp'>30</div>
+						<div class='hori_inner text_display' id='elevatorLoad'>0</div>
+						<div class='hori_inner text_display' id='elevatorVolt'>11.1</div>
 					</div>
-					<div class='vert_inner grey gauge' id='elevator_gauge' style='height:85%; border-style:hidden;'>
-							<canvas class='gauge_outline' id='elevator_gauge_outline'> </canvas>
-							<div class='gauge_center servo_gauge_center' id='elevator_gauge_center'></div>
-							<div class='gauge_needle servo_gauge_needle' id='elevator_gauge_needle'></div>
-							<div class='servo_value' id='elevator_value'>0.0</div>
+					<div class='vert_inner grey gauge' id='elevatorGauge' style='height:85%; border-style:hidden;'>
+							<canvas class='gauge-outline' id='elevatorGaugeOutline'> </canvas>
+							<div class='gauge_center servo_gauge_center' id='elevatorGaugeCenter'></div>
+							<div class='gauge_needle servo_gauge_needle' id='elevatorGaugeNeedle'></div>
+							<div class='servo_value' id='elevatorValue'>0.0</div>
 					</div>
 				</div>
 			</div>

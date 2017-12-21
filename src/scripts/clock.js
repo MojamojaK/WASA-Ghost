@@ -1,26 +1,43 @@
-class Clock extends EventEmitter {};
-const clock = new Clock();
+const EventEmitter = require('events')
 
-function setup_clock(){
-	let freq_count = 0;
+module.exports.Clock = class Clock extends EventEmitter {
+  constructor (dateNode, timeNode, freqNode) {
+    super()
+    this.dateNode = dateNode
+    this.timeNode = timeNode
+    this.freqNode = freqNode
+    this.freqCount = 0
+    this.timeout = undefined
+    let tmpClock = this
+    this.on('update', function () { tmpClock.updateFreq() })
+    this.displayTime()
+  }
 
-	function display_time(){
-		let d = new Date();
-		date_node.html(d.toLocaleDateString());
-		time_node.html(d.toLocaleTimeString());
-		setTimeout(display_time, 1000 - d % 1000);
-		freq_node.html(freq_count + "Hz");
-		freq_count = 0;
-	}
-	display_time();
+  getValue () {
+    return Date.now()
+  }
 
-	let timeout;
-	function update_freq(){
-		clearTimeout(timeout);
-		freq_node.css({backgroundColor: "green"});
-		timeout = setTimeout(function(){freq_node.css({backgroundColor: "black"});}, 1000);
-		freq_count++;
-	}
+  setValue () {}
 
-	clock.on('update', update_freq);
+  setRandom () {}
+
+  displayTime () {
+    let d = new Date()
+    this.dateNode.html(d.toLocaleDateString())
+    this.timeNode.html(d.toLocaleTimeString())
+    let tmpClock = this
+    setTimeout(function () { tmpClock.displayTime() }, 1000 - d % 1000)
+    this.freqNode.html(this.freqCount + 'Hz')
+    this.freqCount = 0
+  }
+
+  updateFreq () {
+    clearTimeout(this.timeout)
+    this.freqNode.css({backgroundColor: 'green'})
+    let tmpFreqNode = this.freqNode
+    this.timeout = setTimeout(function () {
+      tmpFreqNode.css({backgroundColor: 'black'})
+    }, 1000)
+    this.freqCount++
+  }
 }
