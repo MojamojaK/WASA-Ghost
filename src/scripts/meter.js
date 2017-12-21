@@ -1,120 +1,153 @@
-class Meter extends EventEmitter {};
-const meter = new Meter();
+const $ = require('jquery')
+const EventEmitter = require('events')
 
-function setup_meter(){
-  console.log("setup meter");
+module.exports.MeterInfo = class MeterInfo extends EventEmitter {
+  constructor (arrowNode, valueNode) {
+    super()
+    this.arrowNode = arrowNode
+    this.valueNode = valueNode
+    this.value = 0
+    this.staticValue = 0
+    this.parent = undefined
+    let tmpMeterInfo = this
+    this.on('update', function () { tmpMeterInfo.setArrow(false) })
+  }
 
-  function render_meter(info){
-    let value = "linear-gradient(to bottom, white 0%, white 1%, ";
-    for (let i = 0; i < 10; i++){
-      value += info.color[i] + " " +(i * 10 + ((i==0)?1:0)).toString() + "%, " + info.color[i] + " " + (i * 10 + 9).toString() + "%, white " + (i * 10 + 9).toString() + "%, white " + ((i+1) * 10).toString() + "%";
-      if (i >= 9)value += ")";
-      else value += ", ";
+  getValue () {
+    return this.value
+  }
+
+  setValue (val) {
+    this.value = val
+  }
+
+  setRandom () {
+    this.value = (Math.random() * 10).toFixed(1)
+  }
+
+  setArrow (resize) {
+    // if (saved_configs.graphics_enabled)
+    this.staticValue = this.value
+    this.valueNode.html((this.staticValue * 1.0).toFixed(2))
+    let fraction = this.staticValue / this.parent.numberNodeCount
+    let y = ((this.parent.bottom + this.parent.height * fraction - this.arrowNode.outerHeight() / 2)) + 'px'
+    let x
+    if (fraction < 0.5) {
+      x = (Math.sqrt(28.8 * fraction) + 5.5) + '%'
+    } else {
+      x = '10%'
     }
-    let meter_node = info.node;
-    meter_node.css({"background": value});
-    let height = meter_node.height();
-    let unit = height / 10;
-    let bottom = window_node.height() - meter_node.offset().top - height;
-    info.height = height;
-    info.bottom = bottom;
-    let e;
-    for (let i = 0; i <= 10; i++){
-      e = $("<div id='" + info.name + "_" + i.toString() + "'class='meter_number " + info.name + "_meter_number' style='bottom: " + (((bottom + unit * i) * 0.97).toFixed(3)).toString() + "px;'>" + i.toString() +"</div>");
-      $("#" + info.name).append(e);
-      if (i < 5){
-        if (info.right) e.css({"right" : meter_x_offset[i]});
-        else e.css({"left" : meter_x_offset[i]});
+    if (resize) {
+      if (this.parent.meterIsRight) this.arrowNode.css({bottom: y, right: x})
+      else this.arrowNode.css({bottom: y, left: x})
+    } else {
+      if (this.parent.meterIsRight) this.arrowNode.animate({bottom: y, right: x}, 30)
+      else this.arrowNode.animate({bottom: y, left: x}, 30)
+    }
+  }
+}
+
+module.exports.Meter = class Meter extends EventEmitter {
+  constructor (windowNode, meterName, meterIsRight, meterWrapperNode, meterNode, meterInfoArray, meterColorArray) {
+    super()
+    this.windowNode = windowNode
+    this.meterName = meterName
+    this.meterIsRight = meterIsRight
+    this.meterWrapperNode = meterWrapperNode
+    this.meterNode = meterNode
+    this.meterInfoArray = meterInfoArray
+    this.meterInfoCount = this.meterInfoArray.length
+    for (let i = 0; i < this.meterInfoCount; i++) {
+      this.meterInfoArray[i].parent = this
+    }
+    this.meterColorArray = meterColorArray
+    this.numberNodeArray = []
+    this.numberNodeCount = this.meterColorArray.length
+    this.height = 0
+    this.unit = 0
+    this.bottom = 0
+    this.draw()
+    let tmpMeter = this
+    this.windowNode.on('resize', function () { tmpMeter.resize() })
+  }
+
+  updateSize () {
+    this.height = this.meterNode.height()
+    this.unit = this.height / this.numberNodeCount
+    this.bottom = this.windowNode.height() - this.meterNode.offset().top - this.height
+  }
+
+  drawLines () {
+    let unit = parseInt((100 / this.numberNodeCount).toFixed(2))
+    let backgroundString = 'linear-gradient(to bottom, white 0%, white 1%, '
+    for (let i = 0; i < this.numberNodeCount; i++) {
+      backgroundString += this.meterColorArray[i]
+      backgroundString += ' '
+      backgroundString += i * unit + ((i === 0) ? 1 : 0)
+      backgroundString += '%, '
+      backgroundString += this.meterColorArray[i]
+      backgroundString += ' '
+      backgroundString += i * unit + (unit - 1)
+      backgroundString += '%, white '
+      backgroundString += i * unit + (unit - 1)
+      backgroundString += '%, white '
+      backgroundString += (i + 1) * unit
+      backgroundString += '%'
+      if (i < this.numberNodeCount - 1) backgroundString += ', '
+    }
+    backgroundString += ')'
+    this.meterNode.css({'background': backgroundString})
+  }
+
+  drawNumbers () {
+    for (let i = 0; i <= this.numberNodeCount; i++) {
+      let numberNodeString = "<div id='"
+      numberNodeString += this.meterName
+      numberNodeString += 'Num'
+      numberNodeString += i.toString()
+      numberNodeString += "' class='meter-number' >"
+      numberNodeString += i.toString()
+      numberNodeString += '</div>'
+      let numberNode = $(numberNodeString)
+      this.meterWrapperNode.append(numberNode)
+      this.numberNodeArray[i] = numberNode
+      if (this.meterIsRight) numberNode.css({'right': '7%', 'text-align': 'right'})
+      else numberNode.css({'left': '7%'})
+    }
+  }
+
+  static meterOffset (x) {
+    return Math.sqrt(2.4 * x) + 3.5 + '%'
+  }
+
+  positionNumbers () {
+    for (let i = 0; i <= this.numberNodeCount; i++) {
+      let numberNode = this.numberNodeArray[i]
+      numberNode.css({'bottom': ((this.bottom + this.unit * i) * 0.97).toFixed(3) + 'px'})
+      if (i < (this.numberNodeCount / 2)) {
+        if (this.meterIsRight) numberNode.css({'right': this.constructor.meterOffset(i)})
+        else numberNode.css({'left': this.constructor.meterOffset(i)})
       }
     }
   }
-  
-  render_meter(alti_meter_info);
-  render_meter(speed_meter_info);
 
-  function resize_meter(info) {
-    let meter_node = info.node;
-    let height = meter_node.height();
-    let unit = height / 10;
-    let bottom = window_node.height() - meter_node.offset().top - height;
-    info.height = height;
-    info.bottom = bottom;
-    hnameu = "#" + info.name + "_";
-    let e;
-    for (let i = 0; i <= 10; i++){
-      e = $(hnameu + i);
-      e.css({"bottom": ((bottom + unit * i) * 0.97).toFixed(3) + "px"});
-      if (i < 5){
-        if (info.right) e.css({"right" : meter_x_offset[i]});
-        else e.css({"left" : meter_x_offset[i]});
-      }
-    }
-    let l = info.arrows.length;
-    if (l != info.tmp_val.length) return;
-    if (saved_configs.graphics_enabled) info.tmp_val = info.value;
-    let arrow_meter_node, i, y, x;
-    for (let k = 0; k < l; k++){
-      arrow_meter_node = info.arrow_nodes[k];
-      info.value_nodes[k].html((info.tmp_val[k] * 1.0).toFixed(2));
-      i = info.tmp_val[k] / info.max;
-      y = ((info.bottom + info.height * i - arrow_meter_node.outerHeight()/2)) + "px";
-      if (i < 0.5) x = (Math.sqrt(28.8 * i) + 5.5) + "%";
-      else x = "10%";
-      if (info.right){
-        arrow_meter_node.css({
-          "bottom": y,
-          "right": x
-        });
-      }
-      else {
-        arrow_meter_node.css({
-          "bottom": y,
-          "left": x
-        });
-      }
+  moveArrows (resize) {
+    for (let i = 0; i < this.meterInfoCount; i++) {
+      this.meterInfoArray[i].setArrow(resize)
     }
   }
 
-  function set_arrow(info) {
-    let l = info.arrows.length;
-    if (l != info.tmp_val.length) return;
-    if (saved_configs.graphics_enabled) info.tmp_val = info.value;
-    let arrow_meter_node, i, y, x;
-    for (let k = 0; k < l; k++){
-      arrow_meter_node = info.arrow_nodes[k];
-      info.value_nodes[k].html((info.tmp_val[k] * 1.0).toFixed(2));
-      i = info.tmp_val[k] / info.max;
-      y = ((info.bottom + info.height * i - arrow_meter_node.outerHeight()/2)) + "px";
-      if (i < 0.5) x = (Math.sqrt(28.8 * i) + 5.5) + "%";
-      else x = "10%";
-      if (info.right){
-        arrow_meter_node.animate({
-          "bottom": y,
-          "right": x
-        }, 30);
-      }
-      else {
-        arrow_meter_node.animate({
-          "bottom": y,
-          "left": x
-        }, 30);
-      }
-    }
+  draw () {
+    this.updateSize()
+    this.drawNumbers()
+    this.positionNumbers()
+    this.drawLines()
+    this.moveArrows(true)
   }
 
-  function resize_meters_all(){
-    resize_meter(alti_meter_info);
-    resize_meter(speed_meter_info);
+  resize () {
+    this.updateSize()
+    this.positionNumbers()
+    this.moveArrows(true)
   }
-
-  function update_meters_all(){
-    set_arrow(alti_meter_info);
-    set_arrow(speed_meter_info);
-  }
-
-  update_meters_all();
-
-  meter.on('resize', resize_meters_all);
-  meter.on('update', update_meters_all);
-
 }

@@ -1,52 +1,44 @@
-class Graphics extends EventEmitter {};
-const graphics = new Graphics();
+const path = require('path')
+const EventEmitter = require('events')
 
-function setup_graphics(){
-  console.log("setup graphics");
-  function resize_window(){
-    gauge.emit('resize');
-    meter.emit('resize');
+module.exports.Graphics = class Graphics extends EventEmitter {
+  constructor (configurator, iconNode, statusNode, toggleNode, data) {
+    super()
+    this.configurator = configurator
+    this.iconNode = iconNode
+    this.statusNode = statusNode
+    this.toggleNode = toggleNode
+    this.data = data
+    let graphics = this
+    this.toggleNode.on('click', function () { graphics.toggleGraphics() })
+    this.on('update', function () { graphics.updateGraphics() })
+    this.setupStatus()
   }
-  window.addEventListener('resize', resize_window);
 
-  document.addEventListener('drop', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    });
-  document.addEventListener('dragover', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-  });
-
-  function update_status(){
-    if (saved_configs.graphics_enabled){
-      graphics_status_node.html('Graphics Running');
-      graphics_icon_node.attr('src', path.join(__dirname, 'static', 'graphics-start.png'));
-    }
-    else{
-      graphics_status_node.html('Graphics Paused');
-      graphics_icon_node.attr('src', path.join(__dirname, 'static', 'graphics-stop.png'));
+  setupStatus () {
+    if (this.configurator.graphicsEnabled) {
+      this.statusNode.html('Graphics Running')
+      this.iconNode.attr('src', path.join(path.dirname(__dirname), 'static', 'graphics-start.png'))
+    } else {
+      this.statusNode.html('Graphics Paused')
+      this.iconNode.attr('src', path.join(path.dirname(__dirname), 'static', 'graphics-stop.png'))
     }
   }
 
-  update_status();
-
-  function toggle_graphics(){
-    saved_configs.graphics_enabled = !saved_configs.graphics_enabled;
-    write_config();
-    update_status();
+  toggleGraphics () {
+    this.configurator.graphicsEnabled = !this.configurator.graphicsEnabled
+    this.configurator.emit('write')
+    this.setupStatus()
   }
 
-  graphics_toggle_node.on('click', toggle_graphics);
-
-  function update_graphics(){
-    if (saved_configs.graphics_enabled){
-      gauge.emit('update');
-      meter.emit('update');
-      map_event.emit('update');
-      orientation.emit('update');
+  updateGraphics () {
+    if (this.configurator.graphicsEnabled) {
+      let graphics = this
+      Object.keys(this.data).map(function (key, index) {
+        graphics.data[key].emit('update')
+      })
+    } else {
+      this.data.clock.emit('update')
     }
   }
-
-  graphics.on('update', update_graphics);
 }

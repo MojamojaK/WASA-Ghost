@@ -1,16 +1,29 @@
-class Orientation extends EventEmitter {};
-const orientation = new Orientation();
+const EventEmitter = require('events')
 
-function setup_orientation(){
-  function set_orientation(info){
-    function needle_step(now) {info.node.css({'-webkit-transform':'rotate(' + now + 'deg)'});}
-    info.node.animate({degree: info.value}, {duration: 30, step: needle_step});
+module.exports.Orientation = class Orientation extends EventEmitter {
+  constructor (orientationNode) {
+    super()
+    this.orientationNode = orientationNode
+    this.value = 0
+    let tmpOrientation = this
+    this.on('update', function () { tmpOrientation.setOrientation() })
   }
 
-  function update_orientation(){
-    set_orientation(yaw_info);
-    set_orientation(pitch_info);
-    set_orientation(roll_info);
+  getValue () {
+    return this.value
   }
-  orientation.on('update', update_orientation);
+
+  setValue (val) {
+    this.value = val
+  }
+
+  setRandom () {
+    this.value = parseFloat((Math.random() * 360).toFixed(1))
+  }
+
+  setOrientation () {
+    let tmpOrientation = this
+    function needleStep (now) { tmpOrientation.orientationNode.css({'-webkit-transform': 'rotate(' + now + 'deg)'}) }
+    this.orientationNode.animate({degree: this.value}, {duration: 30, step: needleStep})
+  }
 }

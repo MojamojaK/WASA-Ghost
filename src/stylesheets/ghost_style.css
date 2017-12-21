@@ -115,12 +115,14 @@ body {
   flex-grow: 1;
 }
 
-#cadence_gauge_center{
+#cadenceGaugeCenter{
   left: calc(50% - 1vmin);
   top: calc(60% - 1vmin);
   width: 2vmin;
   height: 2vmin;
 }
+
+
 
 .servo_gauge_center{
   left: calc(50% - 1.1vmin);
@@ -137,7 +139,7 @@ body {
   z-index: 17;
 }
 
-#cadence_gauge_needle{
+#cadenceGaugeNeedle{
   transform:rotate(-90deg);
 }
 
@@ -173,7 +175,7 @@ body {
   height: 100%;
 }
 
-.gauge_outline{
+.gauge-outline{
   width:100%;
   height:100%;
   z-index: 15;
@@ -181,7 +183,7 @@ body {
   user-select: none;
 }
 
-#cadence_value{
+#cadenceValue{
   margin: auto;
   position: relative;
   top: -6.5vmin;
@@ -286,7 +288,7 @@ body {
   z-index: 32;
 }
 
-.meter_line{
+.meter-line{
   position: absolute;
   top: 25%;
   width:1%;
@@ -296,50 +298,38 @@ body {
   pointer-events: none;
 }
 
-.meter_number{
+.meter-number{
   pointer-events: none; 
   position: absolute;
   z-index: 33;
   font-size: 2.5vmin;
 }
 
-#altitude_meter{
-  right: 1%;
-  background: linear-gradient(to bottom, red 0%, red 10%, green 10%, green 70%, yellow 70%, yellow 90%, red 90%, red 100%);
-  border-bottom-left-radius: 100%;
-}
-
-#altitude_meter_line{
+#altitudeMeter{
   right: 1%;
   border-bottom-left-radius: 100%;
 }
 
-.altitude_meter_number{
-  right: 7%;
+#altitudeMeterLine{
+  right: 1%;
+  border-bottom-left-radius: 100%;
 }
 
-#speed_meter{
-  left: 1%;
-  position: absolute;
-  background: linear-gradient(to bottom, red 0%, red 10%, yellow 10%, yellow 20%, green 20%, green 80%, yellow 80%, yellow 90%, red 90%, red 100%);
-  border-bottom-right-radius: 100%;
-}
-
-#speed_meter_line{
+#speedMeter{
   left: 1%;
   border-bottom-right-radius: 100%;
 }
 
-.speed_meter_number{
-  left: 7%;
-  text-align: right;
+#speedMeterLine{
+  left: 1%;
+  border-bottom-right-radius: 100%;
 }
 
 .pink{
   color: #ff00ff;
 }
 
-.light_blue{
+.light-blue{
   color: #00ffff;
 }
 
@@ -383,13 +373,13 @@ body {
   text-align: right;
 }
 
-#map_dragdrop{
+#mapDragDrop{
   display: table;
   width: 100%;
   height: 100%;
 }
 
-#map_dragdrop div{
+#mapDragDrop div{
 	display: table-cell;
 	text-align: center;
 	vertical-align: middle;

@@ -1,57 +1,61 @@
-let menu = new Menu();
-let submenu_edit = new Menu();
-let submenu_view = new Menu();
-let submenu_window = new Menu();
-let submenu_help = new Menu();
+const Electron = require('electron')
+const remote = Electron.remote
+const {Menu, MenuItem} = remote
 
-let fake_serial = new MenuItem({label: 'Toggle Data Generator', click(){debug.emit('toggle')}, type: 'checkbox'});
+module.exports.GhostMenu = class GhostMenu {
+  constructor () {
+    this.menu = new Menu()
+    this.subMenuEdit = new Menu()
+    this.subMenuView = new Menu()
+    this.subMenuWindow = new Menu()
+    this.subMenuHelp = new Menu()
 
-submenu_edit.append(new MenuItem({role: 'copy'}));
-submenu_edit.append(new MenuItem({role: 'paste'}));
-submenu_edit.append(new MenuItem({label: 'Import Map Tiles', click(){import_mbtiles();}}));
-submenu_edit.append(fake_serial);
+    this.subMenuEdit.append(new MenuItem({role: 'copy'}))
+    this.subMenuEdit.append(new MenuItem({role: 'paste'}))
+    this.subMenuView.append(new MenuItem({role: 'reload'}))
+    this.subMenuView.append(new MenuItem({role: 'forcereload'}))
+    this.subMenuView.append(new MenuItem({role: 'toggledevtools'}))
+    this.subMenuView.append(new MenuItem({type: 'separator'}))
+    this.subMenuView.append(new MenuItem({role: 'togglefullscreen'}))
+    this.subMenuHelp.append(new MenuItem({label: 'Learn More', click () { Electron.shell.openExternal('https://youtu.be/MJdz3i44dIc') }}))
 
-submenu_view.append(new MenuItem({role: 'reload'}));
-submenu_view.append(new MenuItem({role: 'forcereload'}));
-submenu_view.append(new MenuItem({role: 'toggledevtools'}));
-submenu_view.append(new MenuItem({type: 'separator'}));
-submenu_view.append(new MenuItem({role: 'togglefullscreen'}));
+    if (process.platform === 'darwin') {
+      this.subMenuApp = new Menu()
+      this.subMenuApp.append(new MenuItem({role: 'about'}))
+      this.subMenuApp.append(new MenuItem({type: 'separator'}))
+      this.subMenuApp.append(new MenuItem({role: 'services', submenu: []}))
+      this.subMenuApp.append(new MenuItem({type: 'separator'}))
+      this.subMenuApp.append(new MenuItem({role: 'hideothers'}))
+      this.subMenuApp.append(new MenuItem({role: 'unhide'}))
+      this.subMenuApp.append(new MenuItem({type: 'separator'}))
+      this.subMenuApp.append(new MenuItem({role: 'quit'}))
+      this.menu.append(new MenuItem({label: 'Ghost', submenu: this.subMenuApp}))
 
-submenu_help.append(new MenuItem({label: 'Learn More', click () { Electron.shell.openExternal('https://youtu.be/MJdz3i44dIc') }}));
+      this.subMenuSpeech = new Menu()
+      this.subMenuSpeech.append(new MenuItem({role: 'startspeaking'}))
+      this.subMenuSpeech.append(new MenuItem({role: 'stopspeaking'}))
+      this.subMenuEdit.append(new MenuItem({type: 'separator'}))
+      this.subMenuEdit.append(new MenuItem({label: 'Speech', submenu: this.subMenuSpeech}))
 
+      this.subMenuWindow.append(new MenuItem({role: 'close'}))
+      this.subMenuWindow.append(new MenuItem({role: 'minimize'}))
+      this.subMenuWindow.append(new MenuItem({role: 'zoom'}))
+      this.subMenuWindow.append(new MenuItem({type: 'separator'}))
+      this.subMenuWindow.append(new MenuItem({role: 'front'}))
+    } else {
+      this.subMenuWindow.append(new MenuItem({role: 'minimize'}))
+      this.subMenuWindow.append(new MenuItem({role: 'close'}))
+    }
 
-if (process.platform === 'darwin') {
-  let submenu_app = new Menu();
-  submenu_app.append(new MenuItem({role: 'about'}));
-  submenu_app.append(new MenuItem({type: 'separator'}));
-  submenu_app.append(new MenuItem({role: 'services', submenu: []}));
-  submenu_app.append(new MenuItem({type: 'separator'}));
-  submenu_app.append(new MenuItem({role: 'hideothers'}));
-  submenu_app.append(new MenuItem({role: 'unhide'}));
-  submenu_app.append(new MenuItem({type: 'separator'}));
-  submenu_app.append(new MenuItem({role: 'quit'}));
-  menu.append(new MenuItem({label: 'Ghost', submenu: submenu_app}));
+    this.menu.append(new MenuItem({label: 'Edit', submenu: this.subMenuEdit}))
+    this.menu.append(new MenuItem({label: 'View', submenu: this.subMenuView}))
+    this.menu.append(new MenuItem({label: 'Window', submenu: this.subMenuWindow}))
+    this.menu.append(new MenuItem({label: 'Help', submenu: this.subMenuHelp}))
 
-  let submenu_speech = new Menu();
-  submenu_speech.append(new MenuItem({role: 'startspeaking'}));
-  submenu_speech.append(new MenuItem({role: 'stopspeaking'}));
-  submenu_edit.append(new MenuItem({type: 'separator'}));
-  submenu_edit.append(new MenuItem({label: 'Speech', submenu: submenu_speech}));
+    this.update()
+  }
 
-  submenu_window.append(new MenuItem({role: 'close'}));
-  submenu_window.append(new MenuItem({role: 'minimize'}));
-  submenu_window.append(new MenuItem({role: 'zoom'}));
-  submenu_window.append(new MenuItem({type: 'separator'}));
-  submenu_window.append(new MenuItem({role: 'front'}));
+  update () {
+    Menu.setApplicationMenu(this.menu)
+  }
 }
-else{
-  submenu_window.append(new MenuItem({role: 'minimize'}));
-  submenu_window.append(new MenuItem({role: 'close'}));
-}
-
-menu.append(new MenuItem({label: 'Edit', submenu: submenu_edit}));
-menu.append(new MenuItem({label: 'View', submenu: submenu_view}));
-menu.append(new MenuItem({label: 'Window', submenu: submenu_window}));
-menu.append(new MenuItem({label: 'Help', submenu: submenu_help}));
-
-Menu.setApplicationMenu(menu);
