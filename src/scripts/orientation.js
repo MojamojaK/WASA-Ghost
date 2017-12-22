@@ -1,10 +1,11 @@
 const EventEmitter = require('events')
 
 module.exports.Orientation = class Orientation extends EventEmitter {
-  constructor (orientationNode) {
+  constructor (orientationNode, parent) {
     super()
     this.orientationNode = orientationNode
     this.value = 0
+    this.parent = parent
     let tmpOrientation = this
     this.on('update', function () { tmpOrientation.setOrientation() })
   }
@@ -14,16 +15,22 @@ module.exports.Orientation = class Orientation extends EventEmitter {
   }
 
   setValue (val) {
-    this.value = val
+    this.value = parseFloat(val)
+    if (this.parent !== undefined) {
+      this.parent.yaw = this.value
+    }
   }
 
   setRandom () {
-    this.value = parseFloat((Math.random() * 360).toFixed(1))
+    this.setValue((Math.random() * 360).toFixed(1))
   }
 
   setOrientation () {
     let tmpOrientation = this
     function needleStep (now) { tmpOrientation.orientationNode.css({'-webkit-transform': 'rotate(' + now + 'deg)'}) }
     this.orientationNode.animate({degree: this.value}, {duration: 30, step: needleStep})
+    if (this.parent !== undefined) {
+      this.parent.emit('updateHeading')
+    }
   }
 }

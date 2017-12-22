@@ -64,22 +64,18 @@ module.exports.Gauge = class Gauge extends EventEmitter {
   }
 
   getValue () {
-    if (this.isCadence) {
-      return this.value
-    } else {
-      return this.value / 10
-    }
+    return this.value
   }
 
   setValue (val) {
-    this.value = val
+    this.value = parseInt(val)
   }
 
   setRandom () {
-    if (this.gaugeOptions.isCadenece) {
-      this.value = (Math.random() * 3000 - 1500).toFixed(1)
+    if (this.gaugeOptions.isCadence) {
+      this.setValue((Math.random() * 200))
     } else {
-      this.value = (Math.random() * 200).toFixed(0)
+      this.setValue(Math.random() * 3000 - 1500)
     }
   }
 

@@ -61,7 +61,7 @@ module.exports.Logger = class Logger extends EventEmitter {
             if (!fs.existsSync(path.dirname(logger.fileName))) {
               fs.mkdirSync(path.dirname(logger.fileName))
             }
-            fs.writeFile(logger.fileName, '', function (err) {
+            fs.writeFile(logger.fileName, logger.constructor.logHeader, function (err) {
               if (!err) logger.emit('open')
               else logger.toggling = false
             })
@@ -122,4 +122,5 @@ module.exports.Logger = class Logger extends EventEmitter {
   }
 }
 
-module.exports.Logger.logKeys = ['clock', 'cadence', 'altitude', 'airSpeed', 'groundSpeed', 'yaw', 'pitch', 'roll', 'map']
+module.exports.Logger.logKeys = ['clock', 'cadence', 'altitude', 'airSpeed', 'groundSpeed', 'rudder', 'elevator', 'yaw', 'pitch', 'roll', 'longitude', 'latitude']
+module.exports.Logger.logHeader = 'ghostlog\n'

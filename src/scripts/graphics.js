@@ -23,6 +23,7 @@ module.exports.Graphics = class Graphics extends EventEmitter {
       this.statusNode.html('Graphics Paused')
       this.iconNode.attr('src', path.join(path.dirname(__dirname), 'static', 'graphics-stop.png'))
     }
+    this.emit('update')
   }
 
   toggleGraphics () {

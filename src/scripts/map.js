@@ -8,6 +8,33 @@ const EventEmitter = require('events')
 const MenuItem = require('electron').remote.MenuItem
 const dialog = require('electron').remote.dialog
 
+module.exports.Coordinate = class Coordinate extends EventEmitter {
+  constructor (intial, parent, index) {
+    super()
+    this.value = intial
+    this.index = index
+    if (this.constructor.parent === undefined) this.constructor.parent = parent
+    let coordinate = this
+    this.on('update', function () { coordinate.updateDisplay() })
+    this.constructor.parent.constructor.coordinates.push(this)
+  }
+
+  getValue () {
+    return this.value
+  }
+
+  setRandom () {}
+
+  setValue (val) {
+    this.value = val
+    this.constructor.parent.planeNavigationPoint.coordinates[this.index] = this.value
+  }
+
+  updateDisplay () {
+    if (this.index === 1) this.constructor.parent.emit('updateCoord')
+  }
+}
+
 module.exports.MapLoader = class MapLoader extends EventEmitter {
   constructor (configurator, accessToken, mapNode, mapDragDropNode, mapImportButtonNode) {
     super()
@@ -19,8 +46,7 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.mapNode = mapNode
     this.mapDragDropNode = mapDragDropNode
     this.mapImportButtonNode = mapImportButtonNode
-    this.yawValue = 0
-    this.value = this.yawValue
+    this.yaw = 0
     this.planeNavigationPoint = {
       type: 'Point',
       coordinates: [139.523889, 35.975278]
@@ -32,7 +58,8 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.setupMenu()
     let mapLoader = this
     this.on('load', function () { mapLoader.drawMap() })
-    this.on('update', function () { mapLoader.updatePlane() })
+    this.on('updateHeading', function () { mapLoader.updatePlaneOrientation() })
+    this.on('updateCoord', function () { mapLoader.updatePlaneGeoPosition() })
     this.attempMapLoad()
   }
 
@@ -112,37 +139,17 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     }))
   }
 
-  getValue () {
-    return this.planeNavigationPoint.coordinates[0] + ',' + this.planeNavigationPoint.coordinates[1]
-  }
-
-  setValue (val, lng, lat) {
-    this.yawValue = val
-    this.value = this.yawValue
-    if (lng !== undefined && lat !== undefined) this.setValueCoordinate(lng, lat)
-  }
-
   setValueCoordinate (lng, lat) {
-    this.planeNavigationPoint.coordinates[0] = lng
-    this.planeNavigationPoint.coordinates[1] = lat
-  }
-
-  setRandom () {
-    this.yawValue = parseFloat((Math.random() * 360).toFixed(1))
-    this.value = this.yawValue
+    this.constructor.coordinates[0].setValue(lng)
+    this.constructor.coordinates[1].setValue(lat)
   }
 
   updatePlaneOrientation () {
-    if (this.map !== null) this.map.setLayoutProperty('planeImage', 'icon-rotate', this.yawValue)
+    if (this.map !== null) this.map.setLayoutProperty('planeImage', 'icon-rotate', this.yaw)
   }
 
   updatePlaneGeoPosition () {
     if (this.planeSource !== null) this.planeSource.setData(this.planeNavigationPoint)
-  }
-
-  updatePlane () {
-    this.updatePlaneOrientation()
-    this.updatePlaneGeoPosition()
   }
 
   attempMapLoad () {
@@ -410,3 +417,4 @@ module.exports.MapLoader.mapOptions = {
   attributionControl: false,
   style: module.exports.MapLoader.mapStyle
 }
+module.exports.MapLoader.coordinates = []

@@ -18,11 +18,11 @@ module.exports.MeterInfo = class MeterInfo extends EventEmitter {
   }
 
   setValue (val) {
-    this.value = val
+    this.value = parseFloat(val)
   }
 
   setRandom () {
-    this.value = (Math.random() * 10).toFixed(1)
+    this.setValue((Math.random() * 10).toFixed(1))
   }
 
   setArrow (resize) {

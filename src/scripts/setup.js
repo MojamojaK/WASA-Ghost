@@ -22,7 +22,7 @@ const mv = require('mv')            // ファイル移動をしてくれる簡�
 const synth = window.speechSynthesis   // 喋らせるライブラリ (現在Macのみ対応) */
 
 const {GhostMenu} = require('./scripts/menu.js')
-const {MapLoader} = require('./scripts/map.js')
+const {Coordinate, MapLoader} = require('./scripts/map.js')
 const {Configurator} = require('./scripts/configurator.js')
 const {Meter, MeterInfo} = require('./scripts/meter.js')
 const {Clock} = require('./scripts/clock.js')
@@ -34,6 +34,7 @@ const {Speech} = require('./scripts/speech.js')
 const {Secret} = require('./scripts/secret.js')
 const {Graphics} = require('./scripts/graphics.js')
 const {Serial} = require('./scripts/serial.js')
+const {Playback} = require('./scripts/playback.js')
 
 const windowNode = $(window)
 
@@ -60,12 +61,13 @@ window.onload = function () {
   let cadenceGauge = new Gauge(windowNode, $('#cadenceValue'), $('#cadenceGaugeNeedle'), $('#cadenceGaugeOutline'), cadenceOptions)
   let rudderGauge = new Gauge(windowNode, $('#rudderValue'), $('#rudderGaugeNeedle'), $('#rudderGaugeOutline'), rudderOptions)
   let elevatorGauge = new Gauge(windowNode, $('#elevatorValue'), $('#elevatorGaugeNeedle'), $('#elevatorGaugeOutline'), elevatorOptions)
-  let yawOrientation = new Orientation($('#yawPlane'))
+  let yawOrientation = new Orientation($('#yawPlane'), mapLoader)
   let pitchOrientation = new Orientation($('#pitchPlane'))
   let rollOrientation = new Orientation($('#rollPlane'))
+  let latitude = new Coordinate(139.523889, mapLoader, 0)
+  let longitude = new Coordinate(35.975278, mapLoader, 1)
   let data = {
     clock: clock,
-    map: mapLoader,
     altitude: altitudeMeterInfo,
     airSpeed: airSpeedMeterInfo,
     groundSpeed: groundSpeedMeterInfo,
@@ -74,15 +76,18 @@ window.onload = function () {
     elevator: elevatorGauge,
     yaw: yawOrientation,
     pitch: pitchOrientation,
-    roll: rollOrientation
+    roll: rollOrientation,
+    latitude: latitude,
+    longitude: longitude
   }
   let logger = new Logger(configurator, $('#log-icon'), $('#log-status'), $('#log-button'), $('#log-filename'), $('#select-log-button'), $('#log-dir'), data)
+  let playback = new Playback($('#playback-icon'), $('#playback-status'), $('#playback-button'), logger, data)
   let graphicsManager = new Graphics(configurator, $('#graphic-icon'), $('#graphic-status'), $('#graphic-button'), data)
   let dataGenerator = new DataGenerator(configurator, $('#debug-icon'), $('#debug-status'), $('#debug-button'), graphicsManager, logger, data)
   let serial = new Serial(graphicsManager, $('#serial_list'), $('#refresh_serial'), $('#connect-icon'), $('#connect-status'), $('#connect-button'), logger, data)
   let speech = new Speech($('#speech-icon'), $('#speech-status'), $('#speech-button'), cadenceGauge)
   let secret = new Secret($('#cover'))
-  let objectArray = [clock, mapLoader, altitudeMeterInfo, airSpeedMeterInfo, rightMeter, leftMeter, cadenceGauge, rudderGauge, elevatorGauge, yawOrientation, pitchOrientation, rollOrientation, dataGenerator, logger, graphicsManager, serial, speech, secret]
+  let objectArray = [clock, mapLoader, altitudeMeterInfo, airSpeedMeterInfo, rightMeter, leftMeter, cadenceGauge, rudderGauge, elevatorGauge, yawOrientation, pitchOrientation, rollOrientation, dataGenerator, logger, playback, graphicsManager, serial, speech, secret]
   console.log('Debug', objectArray)
   ghostMenu.update()
 }
