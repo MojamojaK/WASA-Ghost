@@ -6,10 +6,7 @@
 
   by Kazuki Fujita 34代 WASA 電装班長
 */
-const Electron = require('electron')
-
-const app = Electron.app // アプリケーション管理用モジュール
-const BrowserWindow = Electron.BrowserWindow // ブラウザ管理用モジュール
+const {app, BrowserWindow, ipcMain, Notification, shell} = require('electron')
 
 const Express = require('express')
 const exApp = Express() // マップデータ配信用expressモジュール
@@ -18,6 +15,7 @@ const path = require('path') // path オブジェクト：内部ファイルのU
 const url = require('url') // url オブジェクト：内部ファイルのURL化に使用
 const os = require('os') // OSの情報を取得するライブラリ
 const fs = require('fs')
+const mv = require('mv')
 const settings = require('electron-settings')
 
 const MBTiles = require('@mapbox/mbtiles')
@@ -66,6 +64,104 @@ function createWindow () {
     // 複数のウィンドウを生成した場合もここでnullにする(配列などで)
     // null にすることでガーベッジコレクションを有効にしてヒープを解放する
     mainWindow = null
+  })
+
+  let downloadType = 'Normal'
+  let downloadDestination = path.join(os.homedir(), 'downloads')
+  let downloadItem
+  let downloadCompleteNotification = new Notification({
+    title: 'File Download Complete',
+    silent: false
+  })
+
+  downloadCompleteNotification.on('click', function () {
+    shell.openItem(downloadDestination)
+  })
+
+  function removeDownloadsFolder () {
+    if (fs.existsSync(path.join(downloadDestination, '.downloads'))) {
+      fs.readdir(path.join(downloadDestination, '.downloads'), function (err, files) {
+        console.log(files)
+        if (err) {
+          console.log(err)
+        } else if (files.length === 1 && files[0] === '.DS_Store') {
+          fs.unlink(path.join(downloadDestination, '.downloads', '.DS_Store'), function (err) {
+            if (err) console.log(err)
+            fs.rmdir(path.join(downloadDestination, '.downloads'), function (err) {
+              if (err) console.log(err)
+            })
+          })
+        } else if (files.length === 0) {
+          fs.rmdir(path.join(downloadDestination, '.downloads'), function (err) {
+            if (err) console.log(err)
+          })
+        }
+      })
+    }
+  }
+
+  mainWindow.webContents.session.on('will-download', function (event, item, webContents) {
+    downloadItem = item
+    if (!fs.existsSync(path.join(downloadDestination, '.downloads'))) {
+      fs.mkdirSync(path.join(downloadDestination, '.downloads'))
+    }
+    item.setSavePath(path.join(downloadDestination, '.downloads', item.getFilename()))
+    item.on('updated', function (event, state) {
+      if (state === 'interrupted') {
+        console.log('Download is interrupted but can be resumed')
+      } else if (state === 'progressing') {
+        if (item.isPaused()) {
+          console.log('Download is paused')
+        } else {
+          let receivedBytes = item.getReceivedBytes()
+          console.log('Received bytes: ', receivedBytes)
+          if (mainWindow !== null && mainWindow.webContents !== null) {
+            if (downloadType === 'Map') {
+              mainWindow.setProgressBar(receivedBytes / 1740890112)
+            }
+            mainWindow.webContents.send('downloadStatus' + downloadType, receivedBytes)
+          }
+        }
+      }
+    })
+    item.once('done', function (event, state) {
+      if (state === 'completed') {
+        console.log('Download successfully')
+        if (Notification.isSupported()) {
+          downloadCompleteNotification.show()
+        }
+        mv(path.join(downloadDestination, '.downloads', item.getFilename()), path.join(downloadDestination, item.getFilename()), function (err) {
+          if (err) console.log(err)
+          removeDownloadsFolder()
+          if (mainWindow !== null && mainWindow.webContents !== null) {
+            mainWindow.webContents.send('downloadState' + downloadType, state)
+          }
+        })
+      } else {
+        console.log('Download failed: ', state)
+        removeDownloadsFolder()
+        if (mainWindow !== null && mainWindow.webContents !== null) {
+          mainWindow.webContents.send('downloadState' + downloadType, state)
+        }
+      }
+      mainWindow.setProgressBar(-1)
+    })
+  })
+
+  ipcMain.on('downloadFiles', function (event, type, fileURL, destination) {
+    downloadType = type
+    downloadDestination = destination
+    mainWindow.webContents.downloadURL(fileURL)
+  })
+
+  ipcMain.on('downloadCancel', function (event, type) {
+    if (downloadItem !== undefined) {
+      console.log('download cancel')
+      downloadType = type
+      downloadItem.cancel()
+      downloadItem = undefined
+      mainWindow.setProgressBar(-1)
+    }
   })
 }
 // ウィンドウ生成準備完了時に発生するイベントに対するハンドラー設定

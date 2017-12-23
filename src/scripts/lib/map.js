@@ -46,6 +46,9 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.mapNode = mapNode
     this.mapDragDropNode = mapDragDropNode
     this.mapImportButtonNode = mapImportButtonNode
+    this.downloadNode = undefined
+    this.downloadStatusListener = undefined
+    this.downloadStateListener = undefined
     this.yaw = 0
     this.planeNavigationPoint = {
       type: 'Point',
@@ -61,6 +64,22 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.on('updateHeading', function () { mapLoader.updatePlaneOrientation() })
     this.on('updateCoord', function () { mapLoader.updatePlaneGeoPosition() })
     this.attempMapLoad()
+  }
+
+  downloadMap () {
+    if (this.downloadNode) {
+      let mapLoader = this
+      ipcRenderer.send('downloadFiles', 'Map', this.constructor.mapDownloadURL, this.mapTilesDirectory)
+
+      this.downloadStatusListener = function (event, receivedBytes) {
+        mapLoader.dragDropLayover.html('downloading... <br>' + (parseFloat(receivedBytes) / 17408901.12).toFixed(1) + '% of 1.74GB')
+      }
+      this.downloadStateListener = function (event, state) {
+        mapLoader.attempMapLoad()
+      }
+      ipcRenderer.on('downloadStatusMap', this.downloadStatusListener)
+      ipcRenderer.once('downloadStateMap', this.downloadStateListener)
+    }
   }
 
   createPlaneNav () {
@@ -110,8 +129,9 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
           if (!fs.existsSync(mapLoader.mapTilesDirectory)) {
             fs.mkdirSync(mapLoader.mapTilesDirectory)
           }
+          ipcRenderer.send('downloadCancel', 'Map')
           mv(file.path, path.join(mapLoader.mapTilesDirectory, path.basename(file.path)), function (err) {
-            if (err) mapLoader.displayImportError()
+            if (err) mapLoader.displayImportError(err)
             else mapLoader.attempMapLoad()
           })
         } else {
@@ -154,6 +174,14 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
 
   attempMapLoad () {
     let mapLoader = this
+    if (this.downloadStatusListener !== undefined) {
+      ipcRenderer.removeListener('downloadStatusMap', this.downloadStatusListener)
+      this.downloadStatusListener = undefined
+    }
+    if (this.downloadStateListener !== undefined) {
+      ipcRenderer.removeListener('downloadStateMap', this.downloadStateListener)
+      this.downloadStateListener = undefined
+    }
     if (!fs.existsSync(this.mapTilesDirectory)) {
       fs.mkdirSync(this.mapTilesDirectory)
     }
@@ -200,7 +228,20 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
         )
       }
       function handleEmptyFiles () {
-        $('#dragdrop_layover').html('Import your .mbtiles file here')
+        mapLoader.dragDropLayover = $('#dragdrop_layover')
+        mapLoader.dragDropLayover.html('Import your .mbtiles file here <br/> or <a id=\'downloadMap\'style=\'z-index:30; background-color:black; color:#00FFFF;\'>click here to download (1.74GB)</a>')
+        mapLoader.downloadNode = $('#downloadMap')
+        mapLoader.downloadNode.on('click', function (event) {
+          mapLoader.dragDropLayover.html('downloading...')
+          event.stopPropagation()
+          mapLoader.downloadMap()
+        })
+        mapLoader.downloadNode.on('mouseenter', function () {
+          mapLoader.downloadNode.css({'color': '#FF0000'})
+        })
+        mapLoader.downloadNode.on('mouseleave', function () {
+          mapLoader.downloadNode.css({'color': '#00FFFF'})
+        })
         dialog.showMessageBox({
           title: 'Missing Map Tiles',
           type: 'error',
@@ -253,6 +294,7 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
         if (!fs.existsSync(mapLoader.mapTilesDirectory)) {
           fs.mkdirSync(mapLoader.mapTilesDirectory)
         }
+        ipcRenderer.send('downloadCancel', 'Map')
         mv(filePath, path.join(mapLoader.mapTilesDirectory, path.basename(filePath)), function (err) {
           if (err) mapLoader.displayImportError(err)
           else mapLoader.attempMapLoad()
@@ -333,7 +375,12 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.map.on('error', function () {})
   }
 }
-
+// module.exports.MapLoader.mapDownloadURL = 'https://doc-0c-2g-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/g4ku8kr1e3thgu2tkutrg2ck5b73t7ba/1514030400000/01994137358430312811/*/1Avz1qD0XLMS6y0gjGuvwgEXrGSIdInNs?e=download'
+module.exports.MapLoader.mapDownloadURL = require('url').format({
+  pathname: path.join(require('os').homedir(), 'desktop', 'osm_tiles.mbtiles'),
+  protocol: 'file:',
+  slashes: true
+})
 module.exports.MapLoader.serverLocation = 'http://localhost:3000'
 module.exports.MapLoader.mapTilesDirName = 'mapTiles'
 module.exports.MapLoader.mapStyle = {
