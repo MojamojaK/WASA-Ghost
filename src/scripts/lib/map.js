@@ -2,11 +2,10 @@ const $ = require('jquery')
 const path = require('path')
 const fs = require('fs')
 const mv = require('mv')
-const open = require('open')
 const mapboxgl = require('mapbox-gl')
 const EventEmitter = require('events')
-const MenuItem = require('electron').remote.MenuItem
-const dialog = require('electron').remote.dialog
+const {remote, ipcRenderer, shell} = require('electron')
+const {MenuItem, dialog} = remote
 const settings = require('electron-settings')
 
 module.exports.Coordinate = class Coordinate extends EventEmitter {
@@ -90,7 +89,7 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     if (!fs.existsSync(this.mapTilesDirectory)) {
       fs.mkdirSync(this.mapTilesDirectory)
     }
-    open(this.mapTilesDirectory)
+    shell.openItem(this.mapTilesDirectory)
   }
 
   setupDragDropEvents () {
