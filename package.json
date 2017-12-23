@@ -37,7 +37,6 @@
     "jquery": "*",
     "mapbox-gl": "^0.43.0",
     "mv": "*",
-    "open": "*",
     "serialport": "*",
     "xbee-api": "*"
   },
