@@ -1,10 +1,11 @@
 const EventEmitter = require('events')
 const MenuItem = require('electron').remote.MenuItem
+const settings = require('electron-settings')
 
 module.exports.DataGenerator = class DataGenerator extends EventEmitter {
-  constructor (configurator, iconNode, statusNode, toggleNode, graphicsManager, logger, data) {
+  constructor (menu, iconNode, statusNode, toggleNode, graphicsManager, logger, data) {
     super()
-    this.configurator = configurator
+    this.menu = menu
     this.interval = undefined
     this.iconNode = iconNode
     this.statusNode = statusNode
@@ -12,6 +13,7 @@ module.exports.DataGenerator = class DataGenerator extends EventEmitter {
     this.graphicsManager = graphicsManager
     this.logger = logger
     this.data = data
+    this.generatorEnabled = settings.get('generator.enabled')
     let generator = this
     this.toggleNode.on('click', function () { generator.emit('toggle') })
     this.on('toggle', function () { generator.toggleStatus() })
@@ -29,23 +31,23 @@ module.exports.DataGenerator = class DataGenerator extends EventEmitter {
   }
 
   toggleStatus () {
-    this.configurator.generatorEnabled = !this.configurator.generatorEnabled
-    this.configurator.emit('write')
+    this.generatorEnabled = !this.generatorEnabled
+    settings.set('generator.enabled', this.generatorEnabled)
     this.setStatus()
   }
 
   setupMenu () {
     let generator = this
-    this.configurator.menu.subMenuEdit.insert(2, new MenuItem({
+    this.menu.subMenuEdit.insert(2, new MenuItem({
       label: 'Toggle Data Generator',
       click () { generator.toggleStatus() },
       type: 'checkbox',
-      checked: generator.configurator.generatorEnabled
+      checked: generator.generatorEnabled
     }))
   }
 
   setStatus () {
-    if (this.configurator.generatorEnabled) {
+    if (this.generatorEnabled) {
       console.log('data generator ON')
       let generator = this
       this.interval = setInterval(function () { generator.randomUpdate() }, 200)
@@ -57,6 +59,6 @@ module.exports.DataGenerator = class DataGenerator extends EventEmitter {
       this.iconNode.attr('src', 'static/debug-off.png')
       this.statusNode.html('Data Generator Disabled')
     }
-    this.configurator.menu.generatorLabel = this.configurator.generatorEnabled
+    this.menu.generatorLabel = this.generatorEnabled
   }
 }
