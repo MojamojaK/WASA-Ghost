@@ -7,6 +7,7 @@ const mapboxgl = require('mapbox-gl')
 const EventEmitter = require('events')
 const MenuItem = require('electron').remote.MenuItem
 const dialog = require('electron').remote.dialog
+const settings = require('electron-settings')
 
 module.exports.Coordinate = class Coordinate extends EventEmitter {
   constructor (intial, parent, index) {
@@ -36,11 +37,11 @@ module.exports.Coordinate = class Coordinate extends EventEmitter {
 }
 
 module.exports.MapLoader = class MapLoader extends EventEmitter {
-  constructor (configurator, accessToken, mapNode, mapDragDropNode, mapImportButtonNode) {
+  constructor (menu, accessToken, mapNode, mapDragDropNode, mapImportButtonNode) {
     super()
-    this.configurator = configurator
+    this.menu = menu
     this.map = null
-    this.mapTilesDirectory = path.join(this.configurator.mainDirectory, this.constructor.mapTilesDirName)
+    this.mapTilesDirectory = path.join(path.dirname(settings.file()), this.constructor.mapTilesDirName)
     this.accessToken = accessToken
     mapboxgl.accessToken = this.accessToken
     this.mapNode = mapNode
@@ -129,11 +130,11 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
 
   setupMenu () {
     let mapLoader = this
-    this.configurator.menu.subMenuEdit.insert(2, new MenuItem({
+    this.menu.subMenuEdit.insert(2, new MenuItem({
       label: 'Import Map Tiles',
       click () { mapLoader.displayImportMapTiles() }
     }))
-    this.configurator.menu.subMenuEdit.insert(3, new MenuItem({
+    this.menu.subMenuEdit.insert(3, new MenuItem({
       label: 'Open Map Directory',
       click () { mapLoader.openMapDirectory() }
     }))

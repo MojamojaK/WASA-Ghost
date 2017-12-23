@@ -1,12 +1,13 @@
 const path = require('path')
+const os = require('os')
 const fs = require('fs')
 const {dialog} = require('electron').remote
 const EventEmitter = require('events')
+const settings = require('electron-settings')
 
 module.exports.Logger = class Logger extends EventEmitter {
-  constructor (configurator, iconNode, statusNode, toggleNode, fileNameNode, dirSelectNode, dirNode, data) {
+  constructor (iconNode, statusNode, toggleNode, fileNameNode, dirSelectNode, dirNode, data) {
     super()
-    this.configurator = configurator
     this.iconNode = iconNode
     this.statusNode = statusNode
     this.toggleNode = toggleNode
@@ -14,6 +15,7 @@ module.exports.Logger = class Logger extends EventEmitter {
     this.dirSelectNode = dirSelectNode
     this.dirNode = dirNode
     this.data = data
+    this.logDirectory = settings.get('log.dirName', path.join(os.homedir(), 'documents', 'GhostLogs'))
     this.enabled = false
     this.unlocked = true
     this.toggling = false
@@ -24,21 +26,21 @@ module.exports.Logger = class Logger extends EventEmitter {
     this.on('open', function () { logger.open() })
     this.on('close', function () { logger.close() })
     this.on('data', function () { logger.logData() })
-    this.dirNode.html(this.configurator.logDirectory + '/')
+    this.dirNode.html(this.logDirectory + '/')
   }
 
   setLogDir () {
     let logger = this
     dialog.showOpenDialog({
       title: 'Select Log Directory',
-      defaultPath: logger.configurator.logDirectory,
+      defaultPath: logger.logDirectory,
       properties: ['openDirectory', 'treatPackageAsDirectory', 'createDirectory', 'promptToCreate']
     }, function (srcFileName) {
       if (srcFileName) {
         let dirPath = srcFileName[0]
-        logger.configurator.logDirectory = dirPath
-        logger.configurator.emit('write')
-        logger.dirNode.html(logger.configurator.logDirectory + '/')
+        logger.logDirectory = dirPath
+        settings.set('log.dirName', logger.logDirectory)
+        logger.dirNode.html(logger.logDirectory + '/')
       }
     })
   }
@@ -47,7 +49,7 @@ module.exports.Logger = class Logger extends EventEmitter {
     if (!this.toggling) {
       this.toggling = true
       if (!this.enabled) {
-        this.fileName = path.join(this.configurator.logDirectory, this.fileNameNode.val() + '.csv')
+        this.fileName = path.join(this.logDirectory, this.fileNameNode.val() + '.csv')
         if (path.basename(this.fileName) === '.csv') {
           this.toggling = false
           return
@@ -55,8 +57,8 @@ module.exports.Logger = class Logger extends EventEmitter {
         let logger = this
         fs.access(this.fileName, function (err) {
           if (err) {
-            if (!fs.existsSync(logger.configurator.logDirectory)) {
-              fs.mkdirSync(logger.configurator.logDirectory)
+            if (!fs.existsSync(logger.logDirectory)) {
+              fs.mkdirSync(logger.logDirectory)
             }
             if (!fs.existsSync(path.dirname(logger.fileName))) {
               fs.mkdirSync(path.dirname(logger.fileName))

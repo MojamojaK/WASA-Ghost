@@ -11,7 +11,7 @@
     "npm"
   ],
   "scripts": {
-    "test": "./node_modules/.bin/standard",
+    "test": "./node_modules/mocha/bin/mocha --reporter spec ./src/scripts/test/*.js",
     "start": "electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
@@ -26,11 +26,13 @@
     "electron": "^1.8.1",
     "electron-packager": "*",
     "electron-rebuild": "*",
+    "mocha": "^4.0.1",
     "standard": "^10.0.3"
   },
   "dependencies": {
     "@mapbox/geojson-area": "*",
     "@mapbox/mbtiles": "*",
+    "electron-settings": "^3.1.4",
     "express": "*",
     "jquery": "*",
     "mapbox-gl": "^0.43.0",
@@ -44,6 +46,9 @@
     "globals": [
       "SpeechSynthesisUtterance",
       "Audio"
+    ],
+    "env": [
+      "mocha"
     ]
   }
 }
