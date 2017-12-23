@@ -7,10 +7,10 @@ module.exports.Clock = class Clock extends EventEmitter {
     this.timeNode = timeNode
     this.freqNode = freqNode
     this.timeout = undefined
+    this.freqCount = 0
     let tmpClock = this
     this.on('update', function () { tmpClock.updateFreq() })
     this.displayTime()
-    this.freqCount = 0
   }
 
   getValue () {
