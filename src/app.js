@@ -18,18 +18,11 @@ const path = require('path') // path オブジェクト：内部ファイルのU
 const url = require('url') // url オブジェクト：内部ファイルのURL化に使用
 const os = require('os') // OSの情報を取得するライブラリ
 const fs = require('fs')
+const settings = require('electron-settings')
 
 const MBTiles = require('@mapbox/mbtiles')
 
-let dataPath
-
-if (process.platform === 'darwin') {
-  dataPath = path.join(os.homedir(), 'Library', 'Application Support', 'ghost')
-} else if (process.platform === 'win32') {
-  dataPath = path.join(os.homedir(), 'AppData', 'Roaming', 'ghost')
-} else {
-  dataPath = path.join(os.homedir(), '.ghost')
-}
+const dataPath = path.dirname(settings.file())
 
 if (!fs.existsSync(dataPath)) {
   fs.mkdirSync(dataPath)
