@@ -89,7 +89,7 @@ module.exports.Logger = class Logger extends EventEmitter {
     this.toggling = false
     this.enabled = true
     this.statusNode.html('Logging...')
-    this.iconNode.attr('src', path.join(path.dirname(__dirname), 'static', 'log-on.png'))
+    this.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'log-on.png'))
   }
 
   close () {
@@ -97,7 +97,7 @@ module.exports.Logger = class Logger extends EventEmitter {
     this.toggling = false
     this.enabled = false
     this.statusNode.html('Logging Disabled')
-    this.iconNode.attr('src', path.join(path.dirname(__dirname), 'static', 'log-off.png'))
+    this.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'log-off.png'))
   }
 
   logData () {

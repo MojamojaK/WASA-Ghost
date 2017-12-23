@@ -18,10 +18,10 @@ module.exports.Graphics = class Graphics extends EventEmitter {
   setupStatus () {
     if (this.configurator.graphicsEnabled) {
       this.statusNode.html('Graphics Running')
-      this.iconNode.attr('src', path.join(path.dirname(__dirname), 'static', 'graphics-start.png'))
+      this.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'graphics-start.png'))
     } else {
       this.statusNode.html('Graphics Paused')
-      this.iconNode.attr('src', path.join(path.dirname(__dirname), 'static', 'graphics-stop.png'))
+      this.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'graphics-stop.png'))
     }
     this.emit('update')
   }

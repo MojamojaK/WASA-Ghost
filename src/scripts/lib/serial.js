@@ -78,11 +78,11 @@ module.exports.Serial = class Serial extends EventEmitter {
     this.connection.open(function (err) {
       if (err) {
         console.log('connection failed', err)
-        serial.iconNode.attr('src', path.join(path.dirname(__dirname), 'static', 'disconnect-icon.png'))
+        serial.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'disconnect-icon.png'))
         serial.statusNode.html('Serial Disconnected')
       } else {
         console.log('connection opened')
-        serial.iconNode.attr('src', path.join(path.dirname(__dirname), 'static', 'connect-icon.png'))
+        serial.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'connect-icon.png'))
         serial.statusNode.html('Serial Connected')
         serial.xbee.parser.on('data', function (frame) { serial.unpackData(frame) })
         serial.xbee.on('err', function () { serial.retryPort() })
@@ -101,7 +101,7 @@ module.exports.Serial = class Serial extends EventEmitter {
     this.connection.close(function () {
       console.log('connection closed')
       serial.connection = undefined
-      serial.iconNode.attr('src', path.join(path.dirname(__dirname), 'static', 'disconnect-icon.png'))
+      serial.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'disconnect-icon.png'))
       serial.statusNode.html('Serial Disconnected')
     })
   }
@@ -114,7 +114,7 @@ module.exports.Serial = class Serial extends EventEmitter {
       this.connection.close(function () {
         console.log('connection closed')
         serial.connection = undefined
-        serial.iconNode.attr('src', path.join(path.dirname(__dirname), 'static', 'disconnect-icon.png'))
+        serial.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'disconnect-icon.png'))
         serial.openPort()
         setTimeout(function () { serial.toggleEnable = true }, 1000)
       })

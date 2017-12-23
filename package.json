@@ -11,6 +11,7 @@
     "npm"
   ],
   "scripts": {
+    "test": "./node_modules/.bin/standard",
     "start": "electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
@@ -23,8 +24,8 @@
   "license": "UNLICENSED",
   "devDependencies": {
     "electron": "^1.8.1",
-    "electron-packager": "^10.1.0",
-    "electron-rebuild": "^1.6.0",
+    "electron-packager": "*",
+    "electron-rebuild": "*",
     "standard": "^10.0.3"
   },
   "dependencies": {
@@ -32,11 +33,11 @@
     "@mapbox/mbtiles": "*",
     "express": "*",
     "jquery": "*",
-    "mapbox-gl": "*",
-    "mv": "^2.1.1",
-    "open": "0.0.5",
+    "mapbox-gl": "^0.43.0",
+    "mv": "*",
+    "open": "*",
     "serialport": "*",
-    "xbee-api": "^0.6.0"
+    "xbee-api": "*"
   },
   "homepage": "https://github.com/MojamojaK/WASA-ghost",
   "standard": {
