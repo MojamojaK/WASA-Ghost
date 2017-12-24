@@ -69,6 +69,7 @@ function createWindow () {
   let downloadType = 'Normal'
   let downloadDestination = path.join(os.homedir(), 'downloads')
   let downloadItem
+  let downloadItemName
   let downloadCompleteNotification = new Notification({
     title: 'File Download Complete',
     silent: false
@@ -79,33 +80,30 @@ function createWindow () {
   })
 
   function removeDownloadsFolder () {
-    if (fs.existsSync(path.join(downloadDestination, '.downloads'))) {
-      fs.readdir(path.join(downloadDestination, '.downloads'), function (err, files) {
-        console.log(files)
-        if (err) {
-          console.log(err)
-        } else if (files.length === 1 && files[0] === '.DS_Store') {
-          fs.unlink(path.join(downloadDestination, '.downloads', '.DS_Store'), function (err) {
-            if (err) console.log(err)
-            fs.rmdir(path.join(downloadDestination, '.downloads'), function (err) {
-              if (err) console.log(err)
-            })
-          })
-        } else if (files.length === 0) {
-          fs.rmdir(path.join(downloadDestination, '.downloads'), function (err) {
-            if (err) console.log(err)
-          })
-        }
-      })
+    let donwnloadsFile = path.join(downloadDestination, '.downloads')
+    if (fs.existsSync(donwnloadsFile)) {
+      if (fs.existsSync(path.join(donwnloadsFile, downloadItemName))) {
+        fs.unlinkSync(path.join(donwnloadsFile, downloadItemName))
+      }
+      if (fs.existsSync(path.join(donwnloadsFile, '.DS_Store'))) {
+        fs.unlinkSync(path.join(donwnloadsFile, '.DS_Store'))
+      }
+      let files = fs.readdirSync(donwnloadsFile)
+      if (files && !files.length) {
+        fs.rmdir(donwnloadsFile, function (err) {
+          if (err) console.log(err)
+        })
+      }
     }
   }
 
   mainWindow.webContents.session.on('will-download', function (event, item, webContents) {
     downloadItem = item
+    downloadItemName = downloadItem.getFilename()
     if (!fs.existsSync(path.join(downloadDestination, '.downloads'))) {
       fs.mkdirSync(path.join(downloadDestination, '.downloads'))
     }
-    item.setSavePath(path.join(downloadDestination, '.downloads', item.getFilename()))
+    item.setSavePath(path.join(downloadDestination, '.downloads', downloadItemName))
     item.on('updated', function (event, state) {
       if (state === 'interrupted') {
         console.log('Download is interrupted but can be resumed')
@@ -130,7 +128,7 @@ function createWindow () {
         if (Notification.isSupported()) {
           downloadCompleteNotification.show()
         }
-        mv(path.join(downloadDestination, '.downloads', item.getFilename()), path.join(downloadDestination, item.getFilename()), function (err) {
+        mv(path.join(downloadDestination, '.downloads', downloadItemName), path.join(downloadDestination, downloadItemName), function (err) {
           if (err) console.log(err)
           removeDownloadsFolder()
           if (mainWindow !== null && mainWindow.webContents !== null) {
@@ -156,7 +154,6 @@ function createWindow () {
 
   ipcMain.on('downloadCancel', function (event, type) {
     if (downloadItem !== undefined) {
-      console.log('download cancel')
       downloadType = type
       downloadItem.cancel()
       downloadItem = undefined
