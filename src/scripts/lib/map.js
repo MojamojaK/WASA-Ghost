@@ -9,9 +9,10 @@ const {MenuItem, dialog} = remote
 const settings = require('electron-settings')
 
 module.exports.Coordinate = class Coordinate extends EventEmitter {
-  constructor (intial, parent, index) {
+  constructor (initial, parent, index) {
     super()
-    this.value = intial
+    this.initial = initial
+    this.value = initial
     this.index = index
     if (this.constructor.parent === undefined) this.constructor.parent = parent
     let coordinate = this
@@ -23,7 +24,9 @@ module.exports.Coordinate = class Coordinate extends EventEmitter {
     return this.value
   }
 
-  setRandom () {}
+  setRandom () {
+    this.setValue((Math.random() * 10 - 5) + this.initial)
+  }
 
   setValue (val) {
     this.value = val
