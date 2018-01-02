@@ -14,7 +14,7 @@ body {
   color: white;
 }
 
-#main_wrapper{
+#main-wrapper{
   position: absolute;
   height: 100%;
   width: 100%;
@@ -23,44 +23,40 @@ body {
   justify-content: space-around;
 }
 
-.main_inner{
+.main-inner{
   position:relative;
   height:100%;
   border:1px solid grey;
   box-sizing: border-box;
 }
 
-.vert_wrapper{
+.vert-wrapper{
   display:flex;
   flex-flow: wrap;
   justify-content:space-around;
 }
 
-.vert_inner{
+.vert-inner{
   position:relative;
   width:100%;
 }
 
 .grey{
-	border:1px solid grey;
+	outline:1px solid grey;
 }
 
-.grey-bottom{
-	border-bottom: 1px solid grey;
-}
-
-.hori_wrapper{
+.hori-wrapper{
   display: flex;
   flex-flow: row;
   justify-content: space-around;
 }
 
-.hori_inner{
+.hori-inner{
   position:relative;
   height:100%;
 }
 
-#serial_list{
+#serial-list{
   height: 80%;
   width: 85%;
   left: 4%;
@@ -68,7 +64,7 @@ body {
   position: relative;
 }
 
-#refresh_serial{
+#refresh-serial{
   height: 2vmin;
   width: 2vmin;
   top: 30%;
@@ -104,14 +100,14 @@ body {
 	font-size: 1vmin;
 }
 
-.text_display{
+.text-display{
   font-family: 'Segment7Standard';
   font-weight: normal;
   font-style: italic;
   font-size:3.75vmin;
   text-align: right;
   padding-top: 0.25vmin;
-  cursor: default; 
+  cursor: default;
   flex-grow: 1;
 }
 
@@ -122,16 +118,14 @@ body {
   height: 2vmin;
 }
 
-
-
-.servo_gauge_center{
+.servo-gauge-center{
   left: calc(50% - 1.1vmin);
   top: calc(50% - 1.1vmin);
   width: 2.2vmin;
   height: 2.2vmin;
 }
 
-.gauge_center{
+.gauge-center{
   position: absolute;
   -webkit-border-radius: 100%;
   border-radius: 100%;
@@ -144,17 +138,17 @@ body {
 }
 
 
-.servo_info{
+.servo-info{
 	display: flex;
 	justify-content: space-around;
 }
 
-.servo_gauge_needle{
+.servo-gauge-needle{
   height: 12vmin;
   top: 6vmin;
 }
 
-.gauge_needle{
+.gauge-needle{
     width: 1vmin;
     background: #800000;
     border-bottom-left-radius: 1vmin;
@@ -192,16 +186,16 @@ body {
   font-size: 4vmin;
   font-family: 'Segment7Standard';
   font-weight: normal;
-  font-style: italic; 
+  font-style: italic;
   text-align: right;
   padding: 0.5vmin;
   background-color: #00C0C0;
   border-radius: 1vmin;
   -webkit-box-shadow: 0px 0px 0.4vmin 0.4vmin rgba(0, 192, 192, .75);
-  cursor: default; 
+  cursor: default;
 }
 
-.servo_value{
+.servo-value{
   margin: auto;
   position: absolute;
   top: 17vh;
@@ -211,13 +205,13 @@ body {
   font-size: 100%;
   font-family: 'Segment7Standard';
   font-weight: normal;
-  font-style: italic; 
+  font-style: italic;
   text-align: right;
   padding: 0.5vmin;
   background-color: #00C0C0;
   border-radius: 1vmin;
   -webkit-box-shadow: 0px 0px 0.4vmin 0.4vmin rgba(0, 192, 192, .75);
-  cursor: default; 
+  cursor: default;
 }
 
 #map{
@@ -237,7 +231,7 @@ body {
   width: calc(100% - 40px);
   overflow:auto;
   color:#FFF;
-  cursor: default; 
+  cursor: default;
 }
 
 .mapboxgl-control-container {
@@ -270,7 +264,7 @@ body {
   margin-right: auto;
 }
 
-.ypr_plane{
+.ypr-plane{
   position: absolute;
   z-index: 33;
   width: 10vmin;
@@ -278,7 +272,7 @@ body {
 }
 
 .meter{
-  pointer-events: none; 
+  pointer-events: none;
   position: absolute;
   top: 25%;
   width:5%;
@@ -299,7 +293,7 @@ body {
 }
 
 .meter-number{
-  pointer-events: none; 
+  pointer-events: none;
   position: absolute;
   z-index: 33;
   font-size: 2.5vmin;
@@ -340,8 +334,8 @@ body {
 .arrow{
   position: absolute;
   bottom: calc(25% - 1vmin);
-  width: 0; 
-  height: 0; 
+  width: 0;
+  height: 0;
   border-top: 2vmin solid transparent;
   border-bottom: 2vmin solid transparent;
   z-index: 33;
@@ -452,6 +446,10 @@ body {
 	justify-content: center;
 }
 
+.center-text {
+  text-align: center;
+}
+
 .rec-dir-disp{
 	display: flex;
 	flex-wrap: nowrap;
@@ -464,4 +462,32 @@ body {
 	text-align: right;
 	white-space:nowrap;
 	overflow: hidden;
+}
+
+.tool-viewer-inner {
+  outline: 1px groove white;
+  height: 100%;
+}
+
+.tab {
+  height: 100%;
+  cursor: pointer;
+  outline: 1px groove white;
+  font-size: 1.5vmin;
+}
+
+.graph-outline{
+  height: 100%;
+  width: 100%;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.chart-container {
+  position: relative;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  background-color: #001717;
+  outline: 1px groove white;
 }

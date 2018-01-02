@@ -12,104 +12,102 @@
 </head>
 
 <body>
-	<div id='main_wrapper'>
-		<div class='main_inner vert_wrapper' style='width:30%;'>
-			<div class='vert_inner vert_wrapper' id='control_panel' style='height:30%; font-size:2.25vmin;'>
-				<div id='control_panel_title' class='vert_inner hori_wrapper' style='height:15%; font-weight: 100%; text-align: center;'>
-					<div id='date-display' class='hori_inner grey w40 center-object'></div>
-					<div id='time-display' class='hori_inner grey w45 center-object'></div>
-					<div id='freq-display' class='hori_inner grey w15 center-object'></div>
+	<div id='main-wrapper'>
+		<div class='main-inner vert-wrapper' style='width:30%;'>
+			<div class='vert-inner vert-wrapper' id='control-panel' style='height:30%; font-size:2.25vmin;'>
+				<div id='control-panel-title' class='vert-inner hori-wrapper' style='height:15%; font-weight: 100%; text-align: center;'>
+					<div id='date-display' class='hori-inner grey w40 center-object'></div>
+					<div id='time-display' class='hori-inner grey w45 center-object'></div>
+					<div id='freq-display' class='hori-inner grey w15 center-object'></div>
 				</div>
-				<div class='vert_inner vert_wrapper grey' style='height:85%;'>
-					<div class='vert_inner' style='height: 10%;'>
-						<select id='serial_list'></select>
-						<img id='refresh_serial' src='static/refresh.png'>
+				<div class='vert-inner vert-wrapper grey' style='height:85%;'>
+					<div class='vert-inner' style='height: 10%;'>
+						<select id='serial-list'></select>
+						<img id='refresh-serial' src='static/refresh.png'>
 					</div>
-					<div class='hori_wrapper vert_inner' style='height:40%'>
-						<div class='w33 hori_inner'>
+					<div class='hori-wrapper vert-inner' style='height:40%'>
+						<div class='w33 hori-inner'>
 							<div id='graphic-button' class='c-button-inner'>
 								<img id='graphic-icon' class='control-panel-icon' src='static/unknown.png'>
 								<div id='graphic-status' class='control-panel-words'>Graphics Loading...</div>
 							</div>
 						</div>
-						<div class='w33 hori_inner'>
+						<div class='w33 hori-inner'>
 							<div id='connect-button' class='c-button-inner'>
 								<img id='connect-icon' class='control-panel-icon' src='static/disconnect-icon.png'>
 								<div id='connect-status' class='control-panel-words'>Serial Disconnected</div>
 							</div>
 						</div>
-						<div class='w33 hori_inner'>
+						<div class='w33 hori-inner'>
 							<div id='debug-button' class='c-button-inner'>
 								<img id='debug-icon' class='control-panel-icon' src='static/unknown.png'>
 								<div id='debug-status' class='control-panel-words'>Data Generator Loading...</div>
 							</div>
 						</div>
-						<div class='w33 hori_inner'>
+						<div class='w33 hori-inner'>
 							<div id='import-map-button' class='c-button-inner'>
 								<img id='import-map-icon' class='control-panel-icon' src='static/map-import.png'>
 								<div id='import-map-status' class='control-panel-words'>Import Map Data</div>
 							</div>
 						</div>
 					</div>
-					<div class='hori_wrapper vert_inner' style='height:40%'>
-						<div class='w33 hori_inner'>
+					<div class='hori-wrapper vert-inner' style='height:40%'>
+						<div class='w33 hori-inner'>
 							<div id='playback-button' class='c-button-inner'>
 								<img id='playback-icon' class='control-panel-icon' src='static/playback-off.png'>
 								<div id='playback-status' class='control-panel-words'>Playback Disabled</div>
 							</div>
 						</div>
-						<div class='w33 hori_inner'>
+						<div class='w33 hori-inner'>
 							<div id='log-button' class='c-button-inner'>
 								<img id='log-icon' class='control-panel-icon' src='static/log-off.png'>
 								<div id='log-status' class='control-panel-words'>Logging Disabled</div>
 							</div>
 						</div>
-						<div class='w33 hori_inner'>
+						<div class='w33 hori-inner'>
 							<div id='speech-button' class='c-button-inner'>
 								<img id='speech-icon' class='control-panel-icon' src='static/speech-off.png'>
 								<div id='speech-status' class='control-panel-words'>Speech Disabled</div>
 							</div>
 						</div>
-						<div class='w33 hori_inner'>
+						<div class='w33 hori-inner'>
 							<div id='select-log-button' class='c-button-inner'>
 								<img id='select-log-icon' class='control-panel-icon' src='static/select-dir.png'>
 								<div id='select-log-status' class='control-panel-words'>Set Log Directory</div>
 							</div>
 						</div>
 					</div>
-					<div class='vert_inner grey hori_wrapper rec-dir-disp' style='height: 10%;'>
-						<div class='hori_inner center-object' style='font-size: 0.8vw; border-right: 1px solid grey;'>Destination:</div>
-						<div id='log-dir' class='hori_inner middle-text' style='font-size: 1vw; text-align: right;'></div>
-						<div class='hori_inner middle-text' style='max-width: 10%;'> <input id='log-filename' type="text" value="TF1" style='text-align: right;'></div>
-						<div id='log-ext' class='hori_inner middle-text' style='font-size: 1vw;'>.csv</div>
+					<div class='vert-inner grey hori-wrapper rec-dir-disp' style='height: 10%;'>
+						<div class='hori-inner center-object' style='font-size: 0.8vw; border-right: 1px solid grey;'>Destination:</div>
+						<div id='log-dir' class='hori-inner middle-text' style='font-size: 1vw; text-align: right;'></div>
+						<div class='hori-inner middle-text' style='max-width: 10%;'> <input id='log-filename' type="text" value="TF1" style='text-align: right;'></div>
+						<div id='log-ext' class='hori-inner middle-text' style='font-size: 1vw;'>.csv</div>
 					</div>
 				</div>
 			</div>
-			<div class='vert_inner grey vert_wrapper' style='height:70%;'>
-				<div class='vert_inner grey' id='tool_picker' style='height:5%;'>
-					<div style='font-size:2.25vmin;'>SCW: https://supercweather.com</div>
-				</div>
-				<webview id='scw' class='vert_inner' src='https://supercweather.com' style='height:95%; z-index=-1'></webview>
+			<div class='vert-inner grey vert-wrapper' style='height:70%;'>
+				<div id='tool-picker' class='vert-inner grey hori-wrapper' style='height:5%;'></div>
+				<div id='tool-viewer' class='vert-inner' style='height:95%; z-index=-1'></div>
 			</div>
 		</div>
 
-		<div class='main_inner' style='width:50%;'>
+		<div class='main-inner' style='width:50%;'>
 			<div id='map'>
 				<div id='mapDragDrop'>
-					<div id='dragdrop_layover'>Loading...</div>
+					<div id='drag-drop-layover'>Loading...</div>
 				</div>
 			</div>
 			<div id='propertyList'></div>
 			<div id='ypr'>
 				<div class='ypr' id='pitch'>
-					<img class='ypr_plane' id='pitchPlane' src='static/pitch.png' alt='ERR'>
+					<img class='ypr-plane' id='pitchPlane' src='static/pitch.png' alt='ERR'>
 				</div>
 				<div class='ypr' id='roll'>
-					<img class='ypr_plane' id='rollPlane' src='static/roll.png' alt='ERR'>
+					<img class='ypr-plane' id='rollPlane' src='static/roll.png' alt='ERR'>
 				</div>
 				<div class='ypr' id='yaw'>
-					<img class='ypr_plane' src='static/compass.png' alt='T'>
-					<img class='ypr_plane' id='yawPlane' src='static/heading.png' alt='ERR'>
+					<img class='ypr-plane' src='static/compass.png' alt='T'>
+					<img class='ypr-plane' id='yawPlane' src='static/heading.png' alt='ERR'>
 				</div>
 			</div>
 			<div id='altitude'>
@@ -131,42 +129,42 @@
 			</div>
 		</div>
 
-		<div class='main_inner vert_wrapper' style='background:black; width:20%;'>
-			<div class='vert_inner grey vert_wrapper' id='cadence' style='height:25%'>
-				<div class='vert_inner grey-bottom center-object' style='height:7.5%; font-size:1.75vmin; cursor: default; '>Cadence</div>
-				<div class='vert_inner grey gauge' id='cadenceGauge' style='height:85%; border-style:hidden;'>
+		<div class='main-inner vert-wrapper' style='background:black; width:20%;'>
+			<div class='vert-inner grey vert-wrapper' id='cadence' style='height:25%'>
+				<div class='vert-inner grey-bottom center-object' style='height:7.5%; font-size:1.75vmin; cursor: default; '>Cadence</div>
+				<div class='vert-inner gauge' id='cadenceGauge' style='height:92.5%'>
 					<canvas class='gauge-outline' id='cadenceGaugeOutline'> </canvas>
-					<div class='gauge_center' id='cadenceGaugeCenter'></div>
-					<div class='gauge_needle' id='cadenceGaugeNeedle'></div>
+					<div class='gauge-center' id='cadenceGaugeCenter'></div>
+					<div class='gauge-needle' id='cadenceGaugeNeedle'></div>
 					<div id='cadenceValue'>0</div>
 				</div>
 			</div>
-			<div class='vert_inner grey vert_wrapper' id='rudder' style='height:37.5%'>
-				<div class='vert_inner grey-bottom center-object' style='height:5%; font-size:1.75vmin; cursor: default;'>Rudder</div>
-				<div class='vert_inner grey-bottom servo_info' style='height:10%;'>
-					<div class='hori_inner text_display' id='rudderTemp'>30</div>
-					<div class='hori_inner text_display' id='rudderLoad'>0</div>
-					<div class='hori_inner text_display' id='rudderVolt'>11.1</div>
+			<div class='vert-inner grey vert-wrapper' id='rudder' style='height:37.5%'>
+				<div class='vert-inner grey center-object' style='height:5%; font-size:1.75vmin; cursor: default;'>Rudder</div>
+				<div class='vert-inner grey servo-info' style='height:10%;'>
+					<div class='hori-inner text-display' id='rudderTemp'>30</div>
+					<div class='hori-inner text-display' id='rudderLoad'>0</div>
+					<div class='hori-inner text-display' id='rudderVolt'>11.1</div>
 				</div>
-				<div class='vert_inner grey gauge' id='rudderGauge' style='height:85%; border-style:hidden;'>
+				<div class='vert-inner grey gauge' id='rudderGauge' style='height:85%; border-style:hidden;'>
 					<canvas class='gauge-outline' id='rudderGaugeOutline'> </canvas>
-					<div class='gauge_center servo_gauge_center' id='rudderGaugeCenter'></div>
-					<div class='gauge_needle servo_gauge_needle' id='rudderGaugeNeedle'></div>
-					<div class='servo_value' id='rudderValue'>0.0</div>
+					<div class='gauge-center servo-gauge-center' id='rudderGaugeCenter'></div>
+					<div class='gauge-needle servo-gauge-needle' id='rudderGaugeNeedle'></div>
+					<div class='servo-value' id='rudderValue'>0.0</div>
 				</div>
 			</div>
-			<div class='vert_inner grey vert_wrapper' id='elevator' style='height:37.5%'>
-				<div class='vert_inner grey-bottom center-object' style='height:5%; font-size:1.75vmin; cursor: default; '>Elevator</div>
-				<div class='vert_inner grey-bottom servo_info' style='height:10%;'>
-					<div class='hori_inner text_display' id='elevatorTemp'>30</div>
-					<div class='hori_inner text_display' id='elevatorLoad'>0</div>
-					<div class='hori_inner text_display' id='elevatorVolt'>11.1</div>
+			<div class='vert-inner grey vert-wrapper' id='elevator' style='height:37.5%'>
+				<div class='vert-inner grey center-object' style='height:5%; font-size:1.75vmin; cursor: default; '>Elevator</div>
+				<div class='vert-inner grey servo-info' style='height:10%;'>
+					<div class='hori-inner text-display' id='elevatorTemp'>30</div>
+					<div class='hori-inner text-display' id='elevatorLoad'>0</div>
+					<div class='hori-inner text-display' id='elevatorVolt'>11.1</div>
 				</div>
-				<div class='vert_inner grey gauge' id='elevatorGauge' style='height:85%; border-style:hidden;'>
+				<div class='vert-inner grey gauge' id='elevatorGauge' style='height:85%; border-style:hidden;'>
 					<canvas class='gauge-outline' id='elevatorGaugeOutline'> </canvas>
-					<div class='gauge_center servo_gauge_center' id='elevatorGaugeCenter'></div>
-					<div class='gauge_needle servo_gauge_needle' id='elevatorGaugeNeedle'></div>
-					<div class='servo_value' id='elevatorValue'>0.0</div>
+					<div class='gauge-center servo-gauge-center' id='elevatorGaugeCenter'></div>
+					<div class='gauge-needle servo-gauge-needle' id='elevatorGaugeNeedle'></div>
+					<div class='servo-value' id='elevatorValue'>0.0</div>
 				</div>
 			</div>
 		</div>

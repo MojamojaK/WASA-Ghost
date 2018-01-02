@@ -32,10 +32,12 @@
   "dependencies": {
     "@mapbox/geojson-area": "*",
     "@mapbox/mbtiles": "*",
+    "chart.js": "^2.7.1",
     "electron-settings": "^3.1.4",
     "express": "*",
     "jquery": "*",
     "mapbox-gl": "^0.43.0",
+    "moment": "^2.20.1",
     "mv": "*",
     "serialport": "*",
     "xbee-api": "*"
@@ -44,7 +46,8 @@
   "standard": {
     "globals": [
       "SpeechSynthesisUtterance",
-      "Audio"
+      "Audio",
+      "google"
     ],
     "env": [
       "mocha"

@@ -8,6 +8,8 @@ module.exports.Clock = class Clock extends EventEmitter {
     this.freqNode = freqNode
     this.timeout = undefined
     this.freqCount = 0
+    this.lastFreq = undefined
+    this.lastDate = undefined
     let tmpClock = this
     this.on('update', function () { tmpClock.updateFreq() })
     this.displayTime()
@@ -23,11 +25,18 @@ module.exports.Clock = class Clock extends EventEmitter {
 
   displayTime () {
     let d = new Date()
-    this.dateNode.html(d.toLocaleDateString())
+    let localeDateString = d.toLocaleDateString()
+    if (localeDateString !== this.lastDate) {
+      this.dateNode.html(localeDateString)
+      this.lastDate = localeDateString
+    }
     this.timeNode.html(d.toLocaleTimeString())
     let tmpClock = this
     setTimeout(function () { tmpClock.displayTime() }, 1000 - d % 1000)
-    this.freqNode.html(this.freqCount + 'Hz')
+    if (this.freqCount !== this.lastFreq) {
+      this.freqNode.html(this.freqCount + 'Hz')
+      this.lastFreq = this.freqCount
+    }
     this.freqCount = 0
   }
 

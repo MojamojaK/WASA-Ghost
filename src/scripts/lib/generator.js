@@ -1,6 +1,7 @@
 const EventEmitter = require('events')
 const MenuItem = require('electron').remote.MenuItem
 const settings = require('electron-settings')
+const {GraphTab} = require('./tab.js')
 
 module.exports.DataGenerator = class DataGenerator extends EventEmitter {
   constructor (menu, iconNode, statusNode, toggleNode, graphicsManager, logger, data) {
@@ -26,6 +27,10 @@ module.exports.DataGenerator = class DataGenerator extends EventEmitter {
     Object.keys(this.data).map(function (key, index) {
       generator.data[key].setRandom()
     })
+    let timeNow = Date.now()
+    for (let i = 0; i < GraphTab.tabs.length; i++) {
+      GraphTab.tabs[i].emit('update', timeNow)
+    }
     this.logger.emit('data')
     this.graphicsManager.emit('update')
   }

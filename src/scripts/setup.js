@@ -5,21 +5,7 @@ DONE:
 TODO:
   gps, graph, acc, nofly-zone
 */
-const $ = require('jquery')        // JQueryライブラリ
-/* const mapboxgl = require('mapbox-gl')     // マップ表示用ライブラリ
-const serialport = require('serialport')    // シリアル送受信用ライブラリ
-const SerialPort = serialport.SerialPort    // ライブラリの必要クラスを引っ張ってくる
-const xbee_api = require('xbee-api')      // XBEE-APIモードと通信するためのライブラリ (SerialPortが必要)
-const C = xbee_api.constants       // xbee-apiライブラリで使用できる定数など
-const Electron = require('electron')      // Electronのライブラリ
-const remote = Electron.remote          // Electronクライアント用ライブラリ
-const {Menu, MenuItem, dialog} = remote                   // メニューやポップアップ用ライブラリ
-const EventEmitter = require('events')        // イベントリスナーの作成など
-const path = require('path')          // 各OSにおけるディレクトリの表示方法を対応させるライブラリ (Mac/Linux: "a/b/c", Windows: "a\b\c")
-const fs = require('fs')            // ファイルアクセス用ライブラリ
-const os = require('os')            // OSの情報を取得するライブラリ
-const mv = require('mv')            // ファイル移動をしてくれる簡易ライブラリ
-const synth = window.speechSynthesis   // 喋らせるライブラリ (現在Macのみ対応) */
+const $ = require('jquery')
 
 const {GhostMenu} = require('./scripts/lib/menu.js')
 const {Coordinate, MapLoader} = require('./scripts/lib/map.js')
@@ -34,6 +20,8 @@ const {Secret} = require('./scripts/lib/secret.js')
 const {Graphics} = require('./scripts/lib/graphics.js')
 const {Serial} = require('./scripts/lib/serial.js')
 const {Playback} = require('./scripts/lib/playback.js')
+const {SCWTab, GraphTab} = require('./scripts/lib/tab.js')
+const {ToolPicker} = require('./scripts/lib/tool-picker.js')
 
 const windowNode = $(window)
 
@@ -62,8 +50,8 @@ window.onload = function () {
   let yawOrientation = new Orientation($('#yawPlane'), mapLoader)
   let pitchOrientation = new Orientation($('#pitchPlane'))
   let rollOrientation = new Orientation($('#rollPlane'))
-  let latitude = new Coordinate(139.523889, mapLoader, 0)
-  let longitude = new Coordinate(35.975278, mapLoader, 1)
+  let longitude = new Coordinate(139.523889, mapLoader, 0)
+  let latitude = new Coordinate(35.975278, mapLoader, 1)
   let data = {
     clock: clock,
     altitude: altitudeMeterInfo,
@@ -80,12 +68,31 @@ window.onload = function () {
   }
   let logger = new Logger($('#log-icon'), $('#log-status'), $('#log-button'), $('#log-filename'), $('#select-log-button'), $('#log-dir'), data)
   let playback = new Playback($('#playback-icon'), $('#playback-status'), $('#playback-button'), logger, data)
+  let weatherTab = new SCWTab('SCW')
+  let graphTab1 = new GraphTab('Graphs(1)', {
+    'Cadence | Altitude': {
+      'Cadence': {obj: cadenceGauge, axis: 1},
+      'Altitude': {obj: altitudeMeterInfo, axis: 2}
+    },
+    'Speed': {
+      'Air': {obj: airSpeedMeterInfo, axis: 1},
+      'Ground': {obj: groundSpeedMeterInfo, axis: 1}
+    }
+  })
+  let graphTab2 = new GraphTab('Graphs(2)', {
+    'Orientation': {
+      'Yaw': {obj: yawOrientation, axis: 1},
+      'Pitch': {obj: pitchOrientation, axis: 1},
+      'Roll': {obj: rollOrientation, axis: 1}
+    }
+  })
+  let toolPicker = new ToolPicker(windowNode, $('#tool-picker'), $('#tool-viewer'), [weatherTab, graphTab1, graphTab2])
   let graphicsManager = new Graphics($('#graphic-icon'), $('#graphic-status'), $('#graphic-button'), data)
   let dataGenerator = new DataGenerator(ghostMenu, $('#debug-icon'), $('#debug-status'), $('#debug-button'), graphicsManager, logger, data)
-  let serial = new Serial(graphicsManager, $('#serial_list'), $('#refresh_serial'), $('#connect-icon'), $('#connect-status'), $('#connect-button'), logger, data)
+  let serial = new Serial($('#serial-list'), $('#refresh-serial'), $('#connect-icon'), $('#connect-status'), $('#connect-button'), graphicsManager, logger, data)
   let speech = new Speech($('#speech-icon'), $('#speech-status'), $('#speech-button'), cadenceGauge)
   let secret = new Secret($('#cover'))
-  let objectArray = [clock, mapLoader, altitudeMeterInfo, airSpeedMeterInfo, rightMeter, leftMeter, cadenceGauge, rudderGauge, elevatorGauge, yawOrientation, pitchOrientation, rollOrientation, dataGenerator, logger, playback, graphicsManager, serial, speech, secret]
+  let objectArray = [clock, mapLoader, altitudeMeterInfo, airSpeedMeterInfo, rightMeter, leftMeter, cadenceGauge, rudderGauge, elevatorGauge, yawOrientation, pitchOrientation, rollOrientation, dataGenerator, logger, playback, graphicsManager, serial, speech, toolPicker, secret]
   console.log('Debug', objectArray)
   ghostMenu.update()
 }

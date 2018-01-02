@@ -6,6 +6,7 @@ module.exports.MeterInfo = class MeterInfo extends EventEmitter {
     super()
     this.arrowNode = arrowNode
     this.valueNode = valueNode
+    this.lastValue = undefined
     this.value = 0
     this.staticValue = 0
     this.parent = undefined
@@ -26,7 +27,7 @@ module.exports.MeterInfo = class MeterInfo extends EventEmitter {
   }
 
   setArrow (resize) {
-    // if (saved_configs.graphics_enabled)
+    if (this.value === this.lastValue) return
     this.staticValue = this.value
     this.valueNode.html((this.staticValue * 1.0).toFixed(2))
     let fraction = this.staticValue / this.parent.numberNodeCount
@@ -44,6 +45,7 @@ module.exports.MeterInfo = class MeterInfo extends EventEmitter {
       if (this.parent.meterIsRight) this.arrowNode.animate({bottom: y, right: x}, 30)
       else this.arrowNode.animate({bottom: y, left: x}, 30)
     }
+    this.lastValue = this.value
   }
 }
 

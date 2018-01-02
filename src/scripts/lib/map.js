@@ -12,6 +12,7 @@ module.exports.Coordinate = class Coordinate extends EventEmitter {
   constructor (initial, parent, index) {
     super()
     this.initial = initial
+    this.lastValue = undefined
     this.value = initial
     this.index = index
     if (this.constructor.parent === undefined) this.constructor.parent = parent
@@ -34,7 +35,9 @@ module.exports.Coordinate = class Coordinate extends EventEmitter {
   }
 
   updateDisplay () {
+    if (this.value === this.lastValue) return
     if (this.index === 1) this.constructor.parent.emit('updateCoord')
+    this.lastValue = this.value
   }
 }
 
@@ -67,6 +70,7 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.on('updateHeading', function () { mapLoader.updatePlaneOrientation() })
     this.on('updateCoord', function () { mapLoader.updatePlaneGeoPosition() })
     this.attempMapLoad()
+    // settings.set('style', this.constructor.mapStyle)
   }
 
   downloadMap () {
@@ -231,9 +235,9 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
         )
       }
       function handleEmptyFiles () {
-        mapLoader.dragDropLayover = $('#dragdrop_layover')
-        mapLoader.dragDropLayover.html('Import your .mbtiles file here <br/> or <a id=\'downloadMap\'style=\'z-index:30; background-color:black; color:#00FFFF;\'>click here to download (1.74GB)</a>')
-        mapLoader.downloadNode = $('#downloadMap')
+        mapLoader.dragDropLayover = $('#drag-drop-layover')
+        mapLoader.dragDropLayover.html('Import your .mbtiles file here <br/> or <a id=\'download-map\'style=\'z-index:30; background-color:black; color:#00FFFF;\'>click here to download (1.74GB)</a>')
+        mapLoader.downloadNode = $('#download-map')
         mapLoader.downloadNode.on('click', function (event) {
           mapLoader.dragDropLayover.html('downloading...')
           event.stopPropagation()
@@ -328,8 +332,8 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
 
       let propertyList = $('#propertyList')
       tmpMap.on('mousemove', function (e) {
-        mapLoader.setValueCoordinate(e.lngLat.lng, e.lngLat.lat)
-        mapLoader.updatePlaneGeoPosition()
+        // mapLoader.setValueCoordinate(e.lngLat.lng, e.lngLat.lat)
+        // mapLoader.updatePlaneGeoPosition()
         propertyList.html('')
         let features = tmpMap.queryRenderedFeatures(e.point, {radius: 100})
         if (features[0]) {
@@ -378,12 +382,12 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.map.on('error', function () {})
   }
 }
-// module.exports.MapLoader.mapDownloadURL = 'https://doc-0c-2g-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/g4ku8kr1e3thgu2tkutrg2ck5b73t7ba/1514030400000/01994137358430312811/*/1Avz1qD0XLMS6y0gjGuvwgEXrGSIdInNs?e=download'
-module.exports.MapLoader.mapDownloadURL = require('url').format({
+module.exports.MapLoader.mapDownloadURL = 'https://doc-0c-2g-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/ar6fh4oisankrtelpfqariuu2cumvbfl/1514779200000/01994137358430312811/*/1Avz1qD0XLMS6y0gjGuvwgEXrGSIdInNs?e=download'
+/* module.exports.MapLoader.mapDownloadURL = require('url').format({
   pathname: path.join(require('os').homedir(), 'desktop', 'osm_tiles.mbtiles'),
   protocol: 'file:',
   slashes: true
-})
+}) */
 module.exports.MapLoader.serverLocation = 'http://localhost:3000'
 module.exports.MapLoader.mapTilesDirName = 'mapTiles'
 module.exports.MapLoader.mapStyle = {

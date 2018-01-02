@@ -5,9 +5,10 @@ const XBeeAPI = require('xbee-api')
 const C = XBeeAPI.constants
 // const serialUtil = SerialPort.SerialPort
 const EventEmitter = require('events')
+const {GraphTab} = require('./tab.js')
 
 module.exports.Serial = class Serial extends EventEmitter {
-  constructor (graphicsManager, listNode, refreshNode, iconNode, statusNode, toggleNode, logger, data) {
+  constructor (listNode, refreshNode, iconNode, statusNode, toggleNode, graphicsManager, logger, data) {
     super()
     this.graphicsManager = graphicsManager
     this.listNode = listNode
@@ -59,7 +60,7 @@ module.exports.Serial = class Serial extends EventEmitter {
     console.log('attempt connection to', portName)
     this.xbee = new XBeeAPI.XBeeAPI({
       api_mode: 2,
-      parser_buffer_size: 64,
+      parser_buffer_size: 128,
       builder_buffer_size: 128
     })
 
@@ -122,7 +123,7 @@ module.exports.Serial = class Serial extends EventEmitter {
   }
 
   unpackData (frame) {
-    console.log('got frame type: ', frame.type)
+    // console.log('got frame type: ', frame.type)
     if (frame.type === 0x90) {
       let buffer = frame.data
       let cadence = buffer[1] | (buffer[2] << 8)
@@ -130,6 +131,8 @@ module.exports.Serial = class Serial extends EventEmitter {
       // let airSpeedDeltaT = (((((buffer[8] << 8) | buffer[7]) << 8) | buffer[6]) << 8) | buffer[5]
       // let cadenceDeltaT = (((((buffer[12] << 8) | buffer[11]) << 8) | buffer[10]) << 8) | buffer[9]
       let altitude = (buffer[25] | buffer[26] << 8) / 100
+      if (altitude > 10) altitude = 10
+      else if (altitude < 0) altitude = 0
       let heading = buffer[13] | buffer[14] << 8
       let roll = buffer[15] | buffer[16] << 8
       let pitch = buffer[17] | buffer[18] << 8
@@ -142,30 +145,44 @@ module.exports.Serial = class Serial extends EventEmitter {
       if (accelX & 0x8000) accelX -= 0x10000 // 2byte signed から 4byte signed に変換
       if (accelY & 0x8000) accelY -= 0x10000 // 2byte signed から 4byte signed に変換
       if (accelZ & 0x8000) accelZ -= 0x10000 // 2byte signed から 4byte signed に変換
-      heading += 180
+      heading -= 180
       roll /= 100
       pitch /= 100
       accelX /= 100
       accelY /= 100
       accelZ /= 100
+      // let gpsUpdate = buffer[32]
+      let longitude = (buffer[33] | buffer[34] << 8 | buffer[35] << 16 | buffer[36] << 24) / 1000000
+      let latitude = (buffer[38] | buffer[39] << 8 | buffer[40] << 16 | buffer[41] << 24) / 1000000
+      // let satellites = buffer[52]
+      // console.log(gpsUpdate)
+      let rudderPos = buffer[68] | buffer[69] << 8
+      let elevatorPos = buffer[87] | buffer[88] << 8
+      if (rudderPos & 0x8000) rudderPos -= 0x10000 // 2byte signed から 4byte signed に変換
+      if (elevatorPos & 0x8000) elevatorPos -= 0x10000 // 2byte signed から 4byte signed に変換
+      // let rudderTemp = buffer[76] | (buffer[77] << 8)
+      // console.log(rudderTemp)
       // let calibAccelerometer = (buffer[27] & 0x03)
       // let calibMagnetometer = (buffer[27] & 0x0C) >> 2
       // let calibGyrosensor = (buffer[27] & 0x30) >> 4
       // let calibSystem = (buffer[27] & 0xC0) >> 6
       // let lastTime = (((((buffer[31] << 8) | buffer[30]) << 8) | buffer[29]) << 8) | buffer[28]
-
-      this.data.cadenceGauge.setValue(cadence)
-      this.data.rudderGauge.setValue(0) // TODO
-      this.data.elevatorGauge.setValue(0) // TODO
-      this.data.altitudeMeterInfo.setValue(altitude)
-      this.data.airSpeedMeterInfo.setValue(airSpeedRotation / 500)
-      this.data.airSpeedMeterInfo.setValue(0) // TODO
-      this.data.yawOrientation.setValue(heading)
-      this.data.pitchOrientation.setValue(pitch)
-      this.data.rollOrientation.setValue(roll)
-      this.data.mapLoader.setValue(heading) // TODO GPS
-
-      this.logger.emit('data')
+      this.data.cadence.setValue(cadence)
+      this.data.rudder.setValue(rudderPos) // TODO
+      this.data.elevator.setValue(elevatorPos) // TODO
+      this.data.altitude.setValue(altitude)
+      this.data.airSpeed.setValue(airSpeedRotation / 500)
+      this.data.groundSpeed.setValue(0) // TODO
+      this.data.yaw.setValue(heading)
+      this.data.pitch.setValue(pitch)
+      this.data.roll.setValue(roll)
+      this.data.latitude.setValue(latitude)
+      this.data.longitude.setValue(longitude)
+      let timeNow = Date.now()
+      for (let i = 0; i < GraphTab.tabs.length; i++) {
+        GraphTab.tabs[i].emit('update', timeNow)
+      }
+      this.logger.emit('data', timeNow)
       this.graphicsManager.emit('update')
     } else if (frame.type === C.FRAME_TYPE.AT_COMMAND_RESPONSE) {
       // テストパケットの受信

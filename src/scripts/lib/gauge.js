@@ -56,6 +56,7 @@ module.exports.Gauge = class Gauge extends EventEmitter {
     this.radius = 0
     this.radiusMul = []
     this.value = 0
+    this.lastValue = -1
     let tmpGauge = this
     this.windowNode.on('resize', function () { tmpGauge.updateGauge() })
     this.on('update', function () { tmpGauge.updateData() })
@@ -80,12 +81,14 @@ module.exports.Gauge = class Gauge extends EventEmitter {
   }
 
   updateData () {
+    if (this.value === this.lastValue) return
     let val = this.value * this.gaugeOptions.valueMultiplier
     let deg = val * this.gaugeOptions.tickMultiplier + this.gaugeOptions.tickOffset
     this.valueNode.html(val.toFixed(this.gaugeOptions.fixed))
     let tmpGauge = this
     function needleStep (now) { tmpGauge.needleNode.css({'-webkit-transform': 'rotate(' + now + 'deg)'}) }
     this.needleNode.animate({degree: deg}, {duration: 30, step: needleStep})
+    this.lastValue = this.value
   }
 
   updateGauge () {

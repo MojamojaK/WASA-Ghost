@@ -20,11 +20,11 @@ module.exports.Graphics = class Graphics extends EventEmitter {
     if (this.graphicsEnabled) {
       this.statusNode.html('Graphics Running')
       this.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'graphics-start.png'))
+      this.emit('update')
     } else {
       this.statusNode.html('Graphics Paused')
       this.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'graphics-stop.png'))
     }
-    this.emit('update')
   }
 
   toggleGraphics () {
@@ -34,10 +34,10 @@ module.exports.Graphics = class Graphics extends EventEmitter {
   }
 
   updateGraphics () {
+    let graphics = this
     if (this.graphicsEnabled) {
-      let graphics = this
       Object.keys(this.data).map(function (key, index) {
-        setTimeout(function () { graphics.data[key].emit('update') }, index * 5)
+        graphics.data[key].emit('update')
       })
     } else {
       this.data.clock.emit('update')
