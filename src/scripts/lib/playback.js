@@ -26,55 +26,67 @@ module.exports.Playback = class Playback extends EventEmitter {
   toggle () {
     this.enabled = !this.enabled
     let playback = this
-    dialog.showOpenDialog({
-      title: 'Select Log File',
-      properties: ['openFile', 'treatPackageAsDirectory'],
-      filters: [{name: 'csv', extensions: ['csv']}]
-    }, function (srcFile) {
-      if (srcFile) {
-        let filePath = srcFile[0]
-        fs.access(filePath, function (err) {
-          if (err) playback.displayLoadError(path.basename(filePath))
-          else {
-            fs.readFile(filePath, {encoding: 'utf-8'}, function (err, data) {
-              if (err) playback.displayLoadError(path.basename(filePath))
-              else {
-                playback.input = data.split('\n')
-                playback.playbackLength = playback.input.length
-                if (playback.input[0] + '\n' === playback.logger.constructor.logHeader) {
-                  playback.index = 1
-                  playback.dataPacket = playback.input[playback.index].split(',')
-                  playback.currentFrameTime = parseInt(playback.dataPacket[playback.logger.constructor.logKeys.indexOf('clock')])
-                  playback.displayFrames()
-                } else {
-                  playback.displayWrongType()
+    if (this.enabled) {
+      dialog.showOpenDialog({
+        title: 'Select Log File',
+        properties: ['openFile', 'treatPackageAsDirectory'],
+        filters: [{name: 'csv', extensions: ['csv']}]
+      }, function (srcFile) {
+        if (srcFile) {
+          let filePath = srcFile[0]
+          fs.access(filePath, function (err) {
+            if (err) playback.displayLoadError(path.basename(filePath))
+            else {
+              fs.readFile(filePath, {encoding: 'utf-8'}, function (err, data) {
+                if (err) playback.displayLoadError(path.basename(filePath))
+                else {
+                  playback.input = data.split('\n')
+                  playback.playbackLength = playback.input.length
+                  if (playback.input[0] === playback.logger.constructor.logHeader) {
+                    playback.index = 1
+                    playback.dataPacket = playback.input[playback.index].split(',')
+                    playback.currentFrameTime = parseInt(playback.dataPacket[playback.logger.constructor.logKeys.indexOf('clock')])
+                    playback.iconNode.attr('src', 'static/playback-on.png')
+                    playback.statusNode.html('Playback Enabled')
+                    playback.displayFrames()
+                  } else {
+                    playback.displayWrongType()
+                  }
                 }
-              }
-            })
-          }
-        })
-      }
-    })
+              })
+            }
+          })
+        }
+      })
+    }
   }
 
   displayFrames () {
-    if (this.dataPacket.length !== this.dataLength) {
-      if (this.dataPacket.length !== 1 || this.dataPacket[0] !== '') this.displayDataError(this.index + 1)
-      return
-    }
-    let logKeys = this.logger.constructor.logKeys
-    for (let i = 0; i < this.dataLength; i++) {
-      this.data[logKeys[i]].setValue(this.dataPacket[i])
-      this.data[logKeys[i]].emit('update')
-    }
-    console.log(this.index)
-    if (this.index < this.playbackLength) {
-      this.index++
-      this.dataPacket = this.input[this.index].split(',')
-      let oldFrameTime = this.currentFrameTime
-      this.currentFrameTime = parseInt(this.dataPacket[this.logger.constructor.logKeys.indexOf('clock')])
-      let playback = this
-      setTimeout(function () { playback.displayFrames() }, this.currentFrameTime - oldFrameTime)
+    if (this.enabled) {
+      if (this.dataPacket.length !== this.dataLength) { // ログでもデータの種類の数が一致しない
+        if (this.dataPacket.length !== 1 || this.dataPacket[0] !== '') this.displayDataError(this.index + 1) // エラーの場所を特定
+        this.enabled = false
+        this.iconNode.attr('src', 'static/playback-off.png')
+        this.statusNode.html('Playback Disabled')
+        return
+      }
+      let logKeys = this.logger.constructor.logKeys
+      for (let i = 0; i < this.dataLength; i++) {
+        this.data[logKeys[i]].setValue(this.dataPacket[i])
+        this.data[logKeys[i]].emit('update')
+      }
+      console.log(this.index)
+      if (this.index < this.playbackLength) {
+        this.index++
+        this.dataPacket = this.input[this.index].split(',')
+        let oldFrameTime = this.currentFrameTime
+        this.currentFrameTime = parseInt(this.dataPacket[this.logger.constructor.logKeys.indexOf('clock')])
+        let playback = this
+        setTimeout(function () { playback.displayFrames() }, this.currentFrameTime - oldFrameTime)
+      }
+    } else {
+      this.iconNode.attr('src', 'static/playback-off.png')
+      this.statusNode.html('Playback Disabled')
     }
   }
 

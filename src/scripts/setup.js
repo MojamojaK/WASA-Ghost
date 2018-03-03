@@ -22,6 +22,7 @@ const {Serial} = require('./scripts/lib/serial.js')
 const {Playback} = require('./scripts/lib/playback.js')
 const {SCWTab, GraphTab} = require('./scripts/lib/tab.js')
 const {ToolPicker} = require('./scripts/lib/tool-picker.js')
+const {Value} = require('./scripts/lib/value.js')
 
 const windowNode = $(window)
 
@@ -52,6 +53,12 @@ window.onload = function () {
   let rollOrientation = new Orientation($('#rollPlane'))
   let longitude = new Coordinate(139.523889, mapLoader, 0)
   let latitude = new Coordinate(35.975278, mapLoader, 1)
+  let rudderTemp = new Value($('#rudderTemp'), 0)
+  let rudderLoad = new Value($('#rudderLoad'), 0)
+  let rudderVolt = new Value($('#rudderVolt'), 0)
+  let elevatorTemp = new Value($('#elevatorTemp'), 0)
+  let elevatorLoad = new Value($('#elevatorLoad'), 0)
+  let elevatorVolt = new Value($('#elevatorVolt'), 0)
   let data = {
     clock: clock,
     altitude: altitudeMeterInfo,
@@ -64,7 +71,13 @@ window.onload = function () {
     pitch: pitchOrientation,
     roll: rollOrientation,
     latitude: latitude,
-    longitude: longitude
+    longitude: longitude,
+    rudderTemp: rudderTemp,
+    rudderLoad: rudderLoad,
+    rudderVolt: rudderVolt,
+    elevatorTemp: elevatorTemp,
+    elevatorLoad: elevatorLoad,
+    elevatorVolt: elevatorVolt
   }
   let logger = new Logger($('#log-icon'), $('#log-status'), $('#log-button'), $('#log-filename'), $('#select-log-button'), $('#log-dir'), data)
   let playback = new Playback($('#playback-icon'), $('#playback-status'), $('#playback-button'), logger, data)

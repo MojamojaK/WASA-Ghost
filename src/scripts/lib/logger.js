@@ -8,12 +8,12 @@ const settings = require('electron-settings')
 module.exports.Logger = class Logger extends EventEmitter {
   constructor (iconNode, statusNode, toggleNode, fileNameNode, dirSelectNode, dirNode, data) {
     super()
-    this.iconNode = iconNode
-    this.statusNode = statusNode
-    this.toggleNode = toggleNode
-    this.fileNameNode = fileNameNode
-    this.dirSelectNode = dirSelectNode
-    this.dirNode = dirNode
+    this.iconNode = iconNode            // トグルボタンの絵アイコン
+    this.statusNode = statusNode        // ONかOFFかの文字を表示する
+    this.toggleNode = toggleNode        // トグルボタン
+    this.fileNameNode = fileNameNode    // ログを入れるファイル名
+    this.dirSelectNode = dirSelectNode  // ログを入れるディレクトリを選択するためのボタン
+    this.dirNode = dirNode              // ログを入れるディレクトリ名
     this.data = data
     this.logDirectory = settings.get('log.dirName', path.join(os.homedir(), 'documents', 'GhostLogs'))
     this.enabled = false
@@ -25,7 +25,7 @@ module.exports.Logger = class Logger extends EventEmitter {
     this.toggleNode.on('click', function () { logger.toggleLog() })
     this.on('open', function () { logger.open() })
     this.on('close', function () { logger.close() })
-    this.on('data', function () { logger.logData() })
+    this.on('data', function (time) { logger.logData(time) })
     this.dirNode.html(this.logDirectory + '/')
   }
 
@@ -56,14 +56,20 @@ module.exports.Logger = class Logger extends EventEmitter {
         }
         let logger = this
         fs.access(this.fileName, function (err) {
-          if (err) {
-            if (!fs.existsSync(logger.logDirectory)) {
-              fs.mkdirSync(logger.logDirectory)
+          if (err) { // ファイルが存在しない場合 (もしくはアクセスできない場合)
+            if (!fs.existsSync(logger.logDirectory)) { // ディレクトリが存在しない場合
+              fs.mkdirSync(logger.logDirectory) // ディレクトリを作成
             }
-            if (!fs.existsSync(path.dirname(logger.fileName))) {
-              fs.mkdirSync(path.dirname(logger.fileName))
+            if (!fs.existsSync(path.dirname(logger.fileName))) { // ファイルが存在しない場合
+              fs.mkdirSync(path.dirname(logger.fileName)) // ファイルを作成
             }
-            fs.writeFile(logger.fileName, logger.constructor.logHeader, function (err) {
+            let initialStr = logger.constructor.logHeader + '\n'
+            console.log(initialStr)
+            for (let i = 0; i < logger.constructor.logKeys.length - 1; i++) {
+              initialStr += logger.constructor.logKeys[i] + ','
+            }
+            initialStr += logger.constructor.logKeys[logger.constructor.logKeys.length - 1] + '\n'
+            fs.writeFile(logger.fileName, initialStr, function (err) {
               if (!err) logger.emit('open')
               else logger.toggling = false
             })
@@ -107,12 +113,12 @@ module.exports.Logger = class Logger extends EventEmitter {
       if (this.unlocked) {
         this.unlocked = false
         let logKeys = this.constructor.logKeys
-        let dataCount = logKeys.length - 1
+        let dataCountm1 = logKeys.length - 1
         let writeStr = ''
-        for (let i = 0; i < dataCount; i++) {
+        for (let i = 0; i < dataCountm1; i++) {
           writeStr += this.data[logKeys[i]].getValue() + ','
         }
-        writeStr += this.data[logKeys[dataCount]].getValue() + '\n'
+        writeStr += this.data[logKeys[dataCountm1]].getValue() + '\n'
         let logger = this
         fs.appendFile(this.fileName, writeStr, function () {
           logger.unlocked = true
@@ -125,4 +131,4 @@ module.exports.Logger = class Logger extends EventEmitter {
 }
 
 module.exports.Logger.logKeys = ['clock', 'cadence', 'altitude', 'airSpeed', 'groundSpeed', 'rudder', 'elevator', 'yaw', 'pitch', 'roll', 'longitude', 'latitude']
-module.exports.Logger.logHeader = 'ghostlog\n'
+module.exports.Logger.logHeader = 'ghostlog'

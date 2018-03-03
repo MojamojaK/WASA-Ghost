@@ -128,17 +128,12 @@ module.exports.Serial = class Serial extends EventEmitter {
       let buffer = frame.data
       let cadence = buffer[1] | (buffer[2] << 8)
       let airSpeedRotation = buffer[3] | (buffer[4] << 8)
-      // let airSpeedDeltaT = (((((buffer[8] << 8) | buffer[7]) << 8) | buffer[6]) << 8) | buffer[5]
-      // let cadenceDeltaT = (((((buffer[12] << 8) | buffer[11]) << 8) | buffer[10]) << 8) | buffer[9]
-      let altitude = (buffer[25] | buffer[26] << 8) / 100
-      if (altitude > 10) altitude = 10
-      else if (altitude < 0) altitude = 0
-      let heading = buffer[13] | buffer[14] << 8
-      let roll = buffer[15] | buffer[16] << 8
-      let pitch = buffer[17] | buffer[18] << 8
-      let accelX = buffer[19] | buffer[20] << 8
-      let accelY = buffer[21] | buffer[22] << 8
-      let accelZ = buffer[23] | buffer[24] << 8
+      let heading = buffer[5] | buffer[6] << 8
+      let roll = buffer[7] | buffer[8] << 8
+      let pitch = buffer[9] | buffer[10] << 8
+      let accelX = buffer[11] | buffer[12] << 8
+      let accelY = buffer[13] | buffer[14] << 8
+      let accelZ = buffer[15] | buffer[16] << 8
       if (heading & 0x8000) heading -= 0x10000 // 2byte signed から 4byte signed に変換
       if (roll & 0x8000) roll -= 0x10000 // 2byte signed から 4byte signed に変換
       if (pitch & 0x8000) pitch -= 0x10000 // 2byte signed から 4byte signed に変換
@@ -151,22 +146,28 @@ module.exports.Serial = class Serial extends EventEmitter {
       accelX /= 100
       accelY /= 100
       accelZ /= 100
-      // let gpsUpdate = buffer[32]
-      let longitude = (buffer[33] | buffer[34] << 8 | buffer[35] << 16 | buffer[36] << 24) / 1000000
-      let latitude = (buffer[38] | buffer[39] << 8 | buffer[40] << 16 | buffer[41] << 24) / 1000000
-      // let satellites = buffer[52]
-      // console.log(gpsUpdate)
-      let rudderPos = buffer[68] | buffer[69] << 8
-      let elevatorPos = buffer[87] | buffer[88] << 8
+      /* let calibAccelerometer = (buffer[17] & 0x03)
+      let calibMagnetometer = (buffer[17] & 0x0C) >> 2
+      let calibGyrosensor = (buffer[17] & 0x30) >> 4
+      let calibSystem = (buffer[17] & 0xC0) >> 6 */
+      let altitude = (buffer[18] | buffer[19] << 8) / 100
+      if (altitude > 10) altitude = 10
+      else if (altitude < 0) altitude = 0
+      let longitude = (buffer[20] | buffer[21] << 8 | buffer[22] << 16 | buffer[23] << 24) / 1000000
+      let latitude = (buffer[24] | buffer[25] << 8 | buffer[26] << 16 | buffer[27] << 24) / 1000000
+      // let satellites = buffer[37]
+      let rudderPos = buffer[63] | buffer[64] << 8
       if (rudderPos & 0x8000) rudderPos -= 0x10000 // 2byte signed から 4byte signed に変換
+      let rudderLoad = buffer[69] | (buffer[70] << 8)
+      let rudderTemp = buffer[71] | (buffer[72] << 8)
+      let rudderVolt = (buffer[73] | (buffer[74] << 8)) / 100
+      let elevatorPos = buffer[82] | buffer[83] << 8
       if (elevatorPos & 0x8000) elevatorPos -= 0x10000 // 2byte signed から 4byte signed に変換
-      // let rudderTemp = buffer[76] | (buffer[77] << 8)
-      // console.log(rudderTemp)
-      // let calibAccelerometer = (buffer[27] & 0x03)
-      // let calibMagnetometer = (buffer[27] & 0x0C) >> 2
-      // let calibGyrosensor = (buffer[27] & 0x30) >> 4
-      // let calibSystem = (buffer[27] & 0xC0) >> 6
-      // let lastTime = (((((buffer[31] << 8) | buffer[30]) << 8) | buffer[29]) << 8) | buffer[28]
+      let elevatorLoad = buffer[88] | (buffer[89] << 8)
+      let elevatorTemp = buffer[90] | (buffer[91] << 8)
+      let elevatorVolt = (buffer[92] | (buffer[93] << 8)) / 100
+      let timeNow = Date.now()
+      this.data.clock.setValue(timeNow)
       this.data.cadence.setValue(cadence)
       this.data.rudder.setValue(rudderPos) // TODO
       this.data.elevator.setValue(elevatorPos) // TODO
@@ -178,11 +179,16 @@ module.exports.Serial = class Serial extends EventEmitter {
       this.data.roll.setValue(roll)
       this.data.latitude.setValue(latitude)
       this.data.longitude.setValue(longitude)
-      let timeNow = Date.now()
+      this.data.rudderLoad.setValue(rudderLoad)
+      this.data.rudderTemp.setValue(rudderTemp)
+      this.data.rudderVolt.setValue(rudderVolt)
+      this.data.elevatorLoad.setValue(elevatorLoad)
+      this.data.elevatorTemp.setValue(elevatorTemp)
+      this.data.elevatorVolt.setValue(elevatorVolt)
       for (let i = 0; i < GraphTab.tabs.length; i++) {
         GraphTab.tabs[i].emit('update', timeNow)
       }
-      this.logger.emit('data', timeNow)
+      this.logger.emit('data')
       this.graphicsManager.emit('update')
     } else if (frame.type === C.FRAME_TYPE.AT_COMMAND_RESPONSE) {
       // テストパケットの受信

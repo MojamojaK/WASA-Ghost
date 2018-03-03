@@ -10,18 +10,23 @@ module.exports.Clock = class Clock extends EventEmitter {
     this.freqCount = 0
     this.lastFreq = undefined
     this.lastDate = undefined
+    this.timeVal = Date.now()
     let tmpClock = this
     this.on('update', function () { tmpClock.updateFreq() })
     this.displayTime()
   }
 
   getValue () {
-    return Date.now()
+    return this.timeVal
   }
 
-  setValue () {}
+  setValue (val) {
+    this.timeVal = val
+  }
 
-  setRandom () {}
+  setRandom () {
+    this.timeVal = Date.now()
+  }
 
   displayTime () {
     let d = new Date()
