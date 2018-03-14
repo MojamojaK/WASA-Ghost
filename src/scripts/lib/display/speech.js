@@ -2,9 +2,10 @@ const EventEmitter = require('events')
 const synth = window.speechSynthesis   // 喋らせるライブラリ (現在Macのみ対応) */
 
 module.exports.Speech = class Speech extends EventEmitter {
-  constructor (iconNode, statusNode, toggleNode, speechObject) {
+  constructor (data, iconNode, statusNode, toggleNode, speechObject) {
     super()
     if (process.platform === 'darwin') {
+      this.data = data
       this.iconNode = iconNode
       this.statusNode = statusNode
       this.toggleNode = toggleNode
@@ -38,6 +39,6 @@ module.exports.Speech = class Speech extends EventEmitter {
   }
 
   sayValue () {
-    this.speak(this.speechObject.value)
+    this.speak(this.data.getValue())
   }
 }

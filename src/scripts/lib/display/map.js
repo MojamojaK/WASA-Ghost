@@ -8,42 +8,12 @@ const {remote, ipcRenderer, shell} = require('electron')
 const {MenuItem, dialog} = remote
 const settings = require('electron-settings')
 
-module.exports.Coordinate = class Coordinate extends EventEmitter {
-  constructor (initial, parent, index) {
-    super()
-    this.initial = initial
-    this.lastValue = undefined
-    this.value = initial
-    this.index = index
-    if (this.constructor.parent === undefined) this.constructor.parent = parent
-    let coordinate = this
-    this.on('update', function () { coordinate.updateDisplay() })
-    this.constructor.parent.constructor.coordinates.push(this)
-  }
-
-  getValue () {
-    return this.value
-  }
-
-  setRandom () {
-    this.setValue((Math.random() * 10 - 5) + this.initial)
-  }
-
-  setValue (val) {
-    this.value = val
-    this.constructor.parent.planeNavigationPoint.coordinates[this.index] = this.value
-  }
-
-  updateDisplay () {
-    if (this.value === this.lastValue) return
-    if (this.index === 1) this.constructor.parent.emit('updateCoord')
-    this.lastValue = this.value
-  }
-}
-
 module.exports.MapLoader = class MapLoader extends EventEmitter {
-  constructor (menu, accessToken, mapNode, mapDragDropNode, mapImportButtonNode) {
+  constructor (dataLongitude, dataLatitude, dataYaw, menu, accessToken, mapNode, mapDragDropNode, mapImportButtonNode) {
     super()
+    this.dataLongitude = dataLongitude
+    this.dataLatitude = dataLatitude
+    this.dataYaw = dataYaw
     this.menu = menu
     this.map = null
     this.mapTilesDirectory = path.join(path.dirname(settings.file()), this.constructor.mapTilesDirName)
@@ -67,10 +37,9 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.setupMenu()
     let mapLoader = this
     this.on('load', function () { mapLoader.drawMap() })
-    this.on('updateHeading', function () { mapLoader.updatePlaneOrientation() })
-    this.on('updateCoord', function () { mapLoader.updatePlaneGeoPosition() })
+    this.on('update', function () { mapLoader.updatePlaneOrientation() })
+    this.on('update', function () { mapLoader.updatePlaneGeoPosition() })
     this.attempMapLoad()
-    // settings.set('style', this.constructor.mapStyle)
   }
 
   downloadMap () {
@@ -166,16 +135,13 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     }))
   }
 
-  setValueCoordinate (lng, lat) {
-    this.constructor.coordinates[0].setValue(lng)
-    this.constructor.coordinates[1].setValue(lat)
-  }
-
   updatePlaneOrientation () {
-    if (this.map !== null) this.map.setLayoutProperty('planeImage', 'icon-rotate', this.yaw)
+    if (this.map !== null) this.map.setLayoutProperty('planeImage', 'icon-rotate', this.dataYaw.getValue())
   }
 
   updatePlaneGeoPosition () {
+    this.planeNavigationPoint.coordinates[0] = this.dataLongitude.getValue()
+    this.planeNavigationPoint.coordinates[1] = this.dataLatitude.getValue()
     if (this.planeSource !== null) this.planeSource.setData(this.planeNavigationPoint)
   }
 
@@ -322,7 +288,7 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
   }
 
   drawMap () {
-    this.mapNode.html('')
+    this.mapNode.empty()
     this.constructor.mapStyle.sources['openmaptiles-japan'].tiles = this.tileURLs
     this.map = new mapboxgl.Map(this.constructor.mapOptions)
     let mapLoader = this
@@ -332,9 +298,10 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
 
       let propertyList = $('#propertyList')
       tmpMap.on('mousemove', function (e) {
-        // mapLoader.setValueCoordinate(e.lngLat.lng, e.lngLat.lat)
+        // mapLoader.dataLatitude.setValue(e.lngLat.lat)
+        // mapLoader.dataLongitude.setValue(e.lngLat.lng)
         // mapLoader.updatePlaneGeoPosition()
-        propertyList.html('')
+        propertyList.empty()
         let features = tmpMap.queryRenderedFeatures(e.point, {radius: 100})
         if (features[0]) {
           propertyList.html(JSON.stringify(e.lngLat, null, 2) + '<br/>' + JSON.stringify(features[0].properties, null, 2))

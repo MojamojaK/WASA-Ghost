@@ -39,7 +39,7 @@ module.exports.ToolPicker = class ToolPicker extends EventEmitter {
 
   display (tab) {
     let tabContent = tab.getContent()
-    this.viewerNode.html('')
+    this.viewerNode.children().detach() // html('')やempty()だと既存のイベントハンドラー達が消える
     this.viewerNode.append(tabContent)
     if (this.currentTab !== undefined) {
       this.currentTab.emit('unclick')

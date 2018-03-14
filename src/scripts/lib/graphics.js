@@ -2,17 +2,17 @@ const path = require('path')
 const EventEmitter = require('events')
 const settings = require('electron-settings')
 
-module.exports.Graphics = class Graphics extends EventEmitter {
-  constructor (iconNode, statusNode, toggleNode, data) {
+module.exports.GraphicsManager = class Graphics extends EventEmitter {
+  constructor (graphicArray, iconNode, statusNode, toggleNode) {
     super()
+    this.graphicArray = graphicArray
     this.iconNode = iconNode
     this.statusNode = statusNode
     this.toggleNode = toggleNode
-    this.data = data
     this.graphicsEnabled = settings.get('graphics.enabled', true)
-    let graphics = this
-    this.toggleNode.on('click', function () { graphics.toggleGraphics() })
-    this.on('update', function () { graphics.updateGraphics() })
+    let tmpGraphics = this
+    this.toggleNode.on('click', function () { tmpGraphics.toggleGraphics() })
+    this.on('update', function () { tmpGraphics.updateGraphics() })
     this.setupStatus()
   }
 
@@ -34,13 +34,11 @@ module.exports.Graphics = class Graphics extends EventEmitter {
   }
 
   updateGraphics () {
-    let graphics = this
     if (this.graphicsEnabled) {
-      Object.keys(this.data).map(function (key, index) {
-        graphics.data[key].emit('update')
-      })
-    } else {
-      this.data.clock.emit('update')
+      let size = this.graphicArray.length
+      for (let i = 0; i < size; i++) {
+        this.graphicArray[i].emit('update')
+      }
     }
   }
 }

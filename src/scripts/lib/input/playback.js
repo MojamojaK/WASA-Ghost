@@ -4,20 +4,21 @@ const {dialog} = require('electron').remote
 const EventEmitter = require('events')
 
 module.exports.Playback = class Playback extends EventEmitter {
-  constructor (iconNode, statusNode, toggleNode, logger, data) {
+  constructor (graphicsManager, data, logger, iconNode, statusNode, toggleNode) {
     super()
+    this.graphicsManager = graphicsManager
+    this.data = data
+    this.logger = logger
     this.iconNode = iconNode
     this.statusNode = statusNode
     this.toggleNode = toggleNode
-    this.logger = logger
-    this.data = data
     this.enabled = false
     this.input = []
     this.index = 0
     this.currentFrameTime = 0
     this.playbackLength = 0
     this.dataPacket = []
-    this.dataLength = this.logger.constructor.logKeys.length
+    this.dataLength = this.logger.logKeys.length
     this.lastTime = 0
     let playback = this
     this.toggleNode.on('click', function () { playback.toggle() })
@@ -45,7 +46,7 @@ module.exports.Playback = class Playback extends EventEmitter {
                   if (playback.input[0] === playback.logger.constructor.logHeader) {
                     playback.index = 1
                     playback.dataPacket = playback.input[playback.index].split(',')
-                    playback.currentFrameTime = parseInt(playback.dataPacket[playback.logger.constructor.logKeys.indexOf('clock')])
+                    playback.currentFrameTime = parseInt(playback.dataPacket[playback.logger.logKeys.indexOf('time')])
                     playback.iconNode.attr('src', 'static/playback-on.png')
                     playback.statusNode.html('Playback Enabled')
                     playback.displayFrames()
@@ -63,24 +64,25 @@ module.exports.Playback = class Playback extends EventEmitter {
 
   displayFrames () {
     if (this.enabled) {
-      if (this.dataPacket.length !== this.dataLength) { // ログでもデータの種類の数が一致しない
+      if (this.dataPacket.length !== this.dataLength) { // ログデータの種類の数が一致しない
         if (this.dataPacket.length !== 1 || this.dataPacket[0] !== '') this.displayDataError(this.index + 1) // エラーの場所を特定
         this.enabled = false
         this.iconNode.attr('src', 'static/playback-off.png')
         this.statusNode.html('Playback Disabled')
         return
       }
-      let logKeys = this.logger.constructor.logKeys
       for (let i = 0; i < this.dataLength; i++) {
-        this.data[logKeys[i]].setValue(this.dataPacket[i])
-        this.data[logKeys[i]].emit('update')
+        let data = this.data[this.logger.logKeys[i]]
+        data.setValue(this.dataPacket[i] / data.serialMultiplier)
       }
+      this.graphicsManager.emit('update')
       console.log(this.index)
       if (this.index < this.playbackLength) {
         this.index++
         this.dataPacket = this.input[this.index].split(',')
+        console.log(this.dataPacket)
         let oldFrameTime = this.currentFrameTime
-        this.currentFrameTime = parseInt(this.dataPacket[this.logger.constructor.logKeys.indexOf('clock')])
+        this.currentFrameTime = parseInt(this.dataPacket[this.logger.logKeys.indexOf('time')])
         let playback = this
         setTimeout(function () { playback.displayFrames() }, this.currentFrameTime - oldFrameTime)
       }

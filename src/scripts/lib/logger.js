@@ -5,16 +5,17 @@ const {dialog} = require('electron').remote
 const EventEmitter = require('events')
 const settings = require('electron-settings')
 
-module.exports.Logger = class Logger extends EventEmitter {
-  constructor (iconNode, statusNode, toggleNode, fileNameNode, dirSelectNode, dirNode, data) {
+class Logger extends EventEmitter {
+  constructor (data, logKeys, iconNode, statusNode, toggleNode, fileNameNode, dirSelectNode, dirNode) {
     super()
+    this.data = data
+    this.logKeys = logKeys
     this.iconNode = iconNode            // トグルボタンの絵アイコン
     this.statusNode = statusNode        // ONかOFFかの文字を表示する
     this.toggleNode = toggleNode        // トグルボタン
     this.fileNameNode = fileNameNode    // ログを入れるファイル名
     this.dirSelectNode = dirSelectNode  // ログを入れるディレクトリを選択するためのボタン
     this.dirNode = dirNode              // ログを入れるディレクトリ名
-    this.data = data
     this.logDirectory = settings.get('log.dirName', path.join(os.homedir(), 'documents', 'GhostLogs'))
     this.enabled = false
     this.unlocked = true
@@ -65,10 +66,10 @@ module.exports.Logger = class Logger extends EventEmitter {
             }
             let initialStr = logger.constructor.logHeader + '\n'
             console.log(initialStr)
-            for (let i = 0; i < logger.constructor.logKeys.length - 1; i++) {
-              initialStr += logger.constructor.logKeys[i] + ','
+            for (let i = 0; i < logger.logKeys.length - 1; i++) {
+              initialStr += logger.logKeys[i] + ','
             }
-            initialStr += logger.constructor.logKeys[logger.constructor.logKeys.length - 1] + '\n'
+            initialStr += logger.logKeys[logger.logKeys.length - 1] + '\n'
             fs.writeFile(logger.fileName, initialStr, function (err) {
               if (!err) logger.emit('open')
               else logger.toggling = false
@@ -112,13 +113,12 @@ module.exports.Logger = class Logger extends EventEmitter {
     if (this.enabled) {
       if (this.unlocked) {
         this.unlocked = false
-        let logKeys = this.constructor.logKeys
-        let dataCountm1 = logKeys.length - 1
+        let dataCountm1 = this.logKeys.length - 1
         let writeStr = ''
         for (let i = 0; i < dataCountm1; i++) {
-          writeStr += this.data[logKeys[i]].getValue() + ','
+          writeStr += this.data[this.logKeys[i]].getValue() + ','
         }
-        writeStr += this.data[logKeys[dataCountm1]].getValue() + '\n'
+        writeStr += this.data[this.logKeys[dataCountm1]].getValue() + '\n'
         let logger = this
         fs.appendFile(this.fileName, writeStr, function () {
           logger.unlocked = true
@@ -130,5 +130,6 @@ module.exports.Logger = class Logger extends EventEmitter {
   }
 }
 
-module.exports.Logger.logKeys = ['clock', 'cadence', 'altitude', 'airSpeed', 'groundSpeed', 'rudder', 'elevator', 'yaw', 'pitch', 'roll', 'longitude', 'latitude']
-module.exports.Logger.logHeader = 'ghostlog'
+Logger.logHeader = 'ghostlog'
+
+module.exports.Logger = Logger

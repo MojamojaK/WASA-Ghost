@@ -1,19 +1,19 @@
 const EventEmitter = require('events')
 const MenuItem = require('electron').remote.MenuItem
 const settings = require('electron-settings')
-const {GraphTab} = require('./tab.js')
+const {GraphTab} = require('../toolbar/tabs.js')
 
 module.exports.DataGenerator = class DataGenerator extends EventEmitter {
-  constructor (menu, iconNode, statusNode, toggleNode, graphicsManager, logger, data) {
+  constructor (graphicsManager, logger, data, menu, iconNode, statusNode, toggleNode) {
     super()
+    this.graphicsManager = graphicsManager
+    this.logger = logger
+    this.data = data
     this.menu = menu
     this.interval = undefined
     this.iconNode = iconNode
     this.statusNode = statusNode
     this.toggleNode = toggleNode
-    this.graphicsManager = graphicsManager
-    this.logger = logger
-    this.data = data
     this.generatorEnabled = settings.get('generator.enabled')
     let generator = this
     this.toggleNode.on('click', function () { generator.emit('toggle') })
@@ -54,8 +54,8 @@ module.exports.DataGenerator = class DataGenerator extends EventEmitter {
   setStatus () {
     if (this.generatorEnabled) {
       console.log('data generator ON')
-      let generator = this
-      this.interval = setInterval(function () { generator.randomUpdate() }, 200)
+      let tmpGenerator = this
+      this.interval = setInterval(function () { tmpGenerator.randomUpdate() }, 200)
       this.iconNode.attr('src', 'static/debug-on.png')
       this.statusNode.html('Data Generator Enabled')
     } else {

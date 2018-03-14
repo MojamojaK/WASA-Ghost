@@ -16,7 +16,6 @@ module.exports.GaugeOptions = class GaugeOptions {
     tickMultiplier,
     textOffset,
     textMultiplier,
-    valueMultiplier,
     fixed,
     widthMultiplier,
     heightMultiplier
@@ -35,7 +34,6 @@ module.exports.GaugeOptions = class GaugeOptions {
     this.tickMultiplier = tickMultiplier
     this.textOffset = textOffset
     this.textMultiplier = textMultiplier
-    this.valueMultiplier = valueMultiplier
     this.fixed = fixed
     this.widthMultiplier = widthMultiplier
     this.heightMultiplier = heightMultiplier
@@ -43,8 +41,9 @@ module.exports.GaugeOptions = class GaugeOptions {
 }
 
 module.exports.Gauge = class Gauge extends EventEmitter {
-  constructor (windowNode, valueNode, needleNode, canvasNode, gaugeOptions) {
+  constructor (data, windowNode, valueNode, needleNode, canvasNode, gaugeOptions) {
     super()
+    this.data = data
     this.windowNode = windowNode
     this.valueNode = valueNode
     this.needleNode = needleNode
@@ -55,40 +54,22 @@ module.exports.Gauge = class Gauge extends EventEmitter {
     this.heightMul = []
     this.radius = 0
     this.radiusMul = []
-    this.value = 0
     this.lastValue = -1
     let tmpGauge = this
     this.windowNode.on('resize', function () { tmpGauge.updateGauge() })
     this.on('update', function () { tmpGauge.updateData() })
-
     this.updateGauge()
   }
 
-  getValue () {
-    return this.value
-  }
-
-  setValue (val) {
-    this.value = parseInt(val)
-  }
-
-  setRandom () {
-    if (this.gaugeOptions.isCadence) {
-      this.setValue((Math.random() * 200))
-    } else {
-      this.setValue(Math.random() * 3000 - 1500)
-    }
-  }
-
   updateData () {
-    if (this.value === this.lastValue) return
-    let val = this.value * this.gaugeOptions.valueMultiplier
+    let val = this.data.getValue()
+    if (val === this.lastValue) return
     let deg = val * this.gaugeOptions.tickMultiplier + this.gaugeOptions.tickOffset
     this.valueNode.html(val.toFixed(this.gaugeOptions.fixed))
     let tmpGauge = this
     function needleStep (now) { tmpGauge.needleNode.css({'-webkit-transform': 'rotate(' + now + 'deg)'}) }
     this.needleNode.animate({degree: deg}, {duration: 30, step: needleStep})
-    this.lastValue = this.value
+    this.lastValue = val
   }
 
   updateGauge () {

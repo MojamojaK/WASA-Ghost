@@ -2,33 +2,21 @@ const $ = require('jquery')
 const EventEmitter = require('events')
 
 module.exports.MeterInfo = class MeterInfo extends EventEmitter {
-  constructor (arrowNode, valueNode) {
+  constructor (data, arrowNode, valueNode) {
     super()
+    this.data = data
     this.arrowNode = arrowNode
     this.valueNode = valueNode
     this.lastValue = undefined
-    this.value = 0
     this.staticValue = 0
     this.parent = undefined
     let tmpMeterInfo = this
     this.on('update', function () { tmpMeterInfo.setArrow(false) })
   }
 
-  getValue () {
-    return this.value
-  }
-
-  setValue (val) {
-    this.value = parseFloat(val)
-  }
-
-  setRandom () {
-    this.setValue((Math.random() * 10).toFixed(1))
-  }
-
   setArrow (resize) {
-    if (this.value === this.lastValue) return
-    this.staticValue = this.value
+    if (this.data.getValue() === this.lastValue) return
+    this.staticValue = this.data.getValue()
     this.valueNode.html((this.staticValue * 1.0).toFixed(2))
     let fraction = this.staticValue / this.parent.numberNodeCount
     let y = ((this.parent.bottom + this.parent.height * fraction - this.arrowNode.outerHeight() / 2)) + 'px'
@@ -45,7 +33,7 @@ module.exports.MeterInfo = class MeterInfo extends EventEmitter {
       if (this.parent.meterIsRight) this.arrowNode.animate({bottom: y, right: x}, 30)
       else this.arrowNode.animate({bottom: y, left: x}, 30)
     }
-    this.lastValue = this.value
+    this.lastValue = this.data.getValue()
   }
 }
 

@@ -491,3 +491,19 @@ body {
   background-color: #001717;
   outline: 1px groove white;
 }
+
+#tunnelTable {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#tunnelTable td, #tunnelTable th{
+  outline: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+#tunnelTable tr:nth-child(even) {
+  background-color: #000011;
+}

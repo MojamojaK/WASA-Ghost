@@ -5,19 +5,19 @@ const XBeeAPI = require('xbee-api')
 const C = XBeeAPI.constants
 // const serialUtil = SerialPort.SerialPort
 const EventEmitter = require('events')
-const {GraphTab} = require('./tab.js')
+const {GraphTab} = require('../toolbar/tabs.js')
 
 module.exports.Serial = class Serial extends EventEmitter {
-  constructor (listNode, refreshNode, iconNode, statusNode, toggleNode, graphicsManager, logger, data) {
+  constructor (graphicsManager, logger, data, listNode, refreshNode, iconNode, statusNode, toggleNode) {
     super()
     this.graphicsManager = graphicsManager
+    this.logger = logger
+    this.data = data
     this.listNode = listNode
     this.refreshNode = refreshNode
     this.iconNode = iconNode
     this.statusNode = statusNode
     this.toggleNode = toggleNode
-    this.logger = logger
-    this.data = data
     this.xbee = undefined
     this.connection = undefined
     this.toggleEnable = true
@@ -28,7 +28,7 @@ module.exports.Serial = class Serial extends EventEmitter {
   }
 
   listPorts () {
-    this.listNode.html('')
+    this.listNode.empty()
     let serial = this
     SerialPort.list(function (err, ports) {
       if (err) {
@@ -79,14 +79,14 @@ module.exports.Serial = class Serial extends EventEmitter {
     this.connection.open(function (err) {
       if (err) {
         console.log('connection failed', err)
-        serial.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'disconnect-icon.png'))
+        serial.iconNode.attr('src', path.join(path.dirname(path.dirname(path.dirname(__dirname))), 'static', 'disconnect-icon.png'))
         serial.statusNode.html('Serial Disconnected')
       } else {
         console.log('connection opened')
-        serial.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'connect-icon.png'))
+        serial.iconNode.attr('src', path.join(path.dirname(path.dirname(path.dirname(__dirname))), 'static', 'connect-icon.png'))
         serial.statusNode.html('Serial Connected')
         serial.xbee.parser.on('data', function (frame) { serial.unpackData(frame) })
-        serial.xbee.on('err', function () { serial.retryPort() })
+        serial.xbee.on('error', function () { serial.retryPort() })
         let testFrameObj = {
           type: 0x10, // xbee_api.constants.FRAME_TYPE.ZIGBEE_TRANSMIT_REQUEST
           destination64: '0013a2004070d534',
@@ -102,8 +102,10 @@ module.exports.Serial = class Serial extends EventEmitter {
     this.connection.close(function () {
       console.log('connection closed')
       serial.connection = undefined
-      serial.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'disconnect-icon.png'))
+      serial.iconNode.attr('src', path.join(path.dirname(path.dirname(path.dirname(__dirname))), 'static', 'disconnect-icon.png'))
       serial.statusNode.html('Serial Disconnected')
+      serial.xbee.parser.removeAllListeners()
+      serial.xbee.removeAllListeners()
     })
   }
 
@@ -115,7 +117,7 @@ module.exports.Serial = class Serial extends EventEmitter {
       this.connection.close(function () {
         console.log('connection closed')
         serial.connection = undefined
-        serial.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'disconnect-icon.png'))
+        serial.iconNode.attr('src', path.join(path.dirname(path.dirname(path.dirname(__dirname))), 'static', 'disconnect-icon.png'))
         serial.openPort()
         setTimeout(function () { serial.toggleEnable = true }, 1000)
       })
@@ -126,53 +128,50 @@ module.exports.Serial = class Serial extends EventEmitter {
     // console.log('got frame type: ', frame.type)
     if (frame.type === 0x90) {
       let buffer = frame.data
-      let cadence = buffer[1] | (buffer[2] << 8)
-      let airSpeedRotation = buffer[3] | (buffer[4] << 8)
-      let heading = buffer[5] | buffer[6] << 8
-      let roll = buffer[7] | buffer[8] << 8
-      let pitch = buffer[9] | buffer[10] << 8
-      let accelX = buffer[11] | buffer[12] << 8
-      let accelY = buffer[13] | buffer[14] << 8
-      let accelZ = buffer[15] | buffer[16] << 8
+      let cadence = (buffer[1] | buffer[2] << 8 | buffer[3] << 16 | buffer[4] << 24)
+      let airSpeed = (buffer[5] | buffer[6] << 8 | buffer[7] << 16 | buffer[8] << 24)
+      let heading = (buffer[9] | buffer[10] << 8)
+      let roll = buffer[11] | buffer[12] << 8
+      let pitch = buffer[13] | buffer[14] << 8
+      let accelX = buffer[15] | buffer[16] << 8
+      let accelY = buffer[17] | buffer[18] << 8
+      let accelZ = buffer[19] | buffer[20] << 8
       if (heading & 0x8000) heading -= 0x10000 // 2byte signed から 4byte signed に変換
       if (roll & 0x8000) roll -= 0x10000 // 2byte signed から 4byte signed に変換
       if (pitch & 0x8000) pitch -= 0x10000 // 2byte signed から 4byte signed に変換
       if (accelX & 0x8000) accelX -= 0x10000 // 2byte signed から 4byte signed に変換
       if (accelY & 0x8000) accelY -= 0x10000 // 2byte signed から 4byte signed に変換
       if (accelZ & 0x8000) accelZ -= 0x10000 // 2byte signed から 4byte signed に変換
-      heading -= 180
-      roll /= 100
-      pitch /= 100
-      accelX /= 100
-      accelY /= 100
-      accelZ /= 100
-      /* let calibAccelerometer = (buffer[17] & 0x03)
-      let calibMagnetometer = (buffer[17] & 0x0C) >> 2
-      let calibGyrosensor = (buffer[17] & 0x30) >> 4
-      let calibSystem = (buffer[17] & 0xC0) >> 6 */
-      let altitude = (buffer[18] | buffer[19] << 8) / 100
-      if (altitude > 10) altitude = 10
-      else if (altitude < 0) altitude = 0
-      let longitude = (buffer[20] | buffer[21] << 8 | buffer[22] << 16 | buffer[23] << 24) / 1000000
-      let latitude = (buffer[24] | buffer[25] << 8 | buffer[26] << 16 | buffer[27] << 24) / 1000000
-      // let satellites = buffer[37]
-      let rudderPos = buffer[63] | buffer[64] << 8
+      heading += 180
+      /* let calibAccelerometer = (buffer[21] & 0x03)
+      let calibMagnetometer = (buffer[21] & 0x0C) >> 2
+      let calibGyrosensor = (buffer[21] & 0x30) >> 4
+      let calibSystem = (buffer[21] & 0xC0) >> 6
+      console.log(calibAccelerometer, calibMagnetometer, calibGyrosensor, calibSystem) */
+      let altitude = (buffer[22] | buffer[23] << 8)
+      // if (altitude > 10) altitude = 10
+      // else if (altitude < 0) altitude = 0
+      let longitude = (buffer[24] | buffer[25] << 8 | buffer[26] << 16 | buffer[27] << 24)
+      let latitude = (buffer[28] | buffer[29] << 8 | buffer[30] << 16 | buffer[31] << 24)
+      // let satellites = buffer[41]
+      // console.log('satellites:', satellites)
+      let rudderPos = buffer[67] | buffer[68] << 8
       if (rudderPos & 0x8000) rudderPos -= 0x10000 // 2byte signed から 4byte signed に変換
-      let rudderLoad = buffer[69] | (buffer[70] << 8)
-      let rudderTemp = buffer[71] | (buffer[72] << 8)
-      let rudderVolt = (buffer[73] | (buffer[74] << 8)) / 100
-      let elevatorPos = buffer[82] | buffer[83] << 8
+      let rudderLoad = buffer[73] | (buffer[74] << 8)
+      let rudderTemp = buffer[75] | (buffer[76] << 8)
+      let rudderVolt = (buffer[77] | (buffer[78] << 8))
+      let elevatorPos = buffer[86] | buffer[87] << 8
       if (elevatorPos & 0x8000) elevatorPos -= 0x10000 // 2byte signed から 4byte signed に変換
-      let elevatorLoad = buffer[88] | (buffer[89] << 8)
-      let elevatorTemp = buffer[90] | (buffer[91] << 8)
-      let elevatorVolt = (buffer[92] | (buffer[93] << 8)) / 100
+      let elevatorLoad = buffer[92] | (buffer[93] << 8)
+      let elevatorTemp = buffer[94] | (buffer[95] << 8)
+      let elevatorVolt = (buffer[96] | (buffer[97] << 8))
       let timeNow = Date.now()
-      this.data.clock.setValue(timeNow)
+      // console.log(roll)
       this.data.cadence.setValue(cadence)
-      this.data.rudder.setValue(rudderPos) // TODO
-      this.data.elevator.setValue(elevatorPos) // TODO
+      this.data.rudder.setValue(rudderPos)
+      this.data.elevator.setValue(elevatorPos)
       this.data.altitude.setValue(altitude)
-      this.data.airSpeed.setValue(airSpeedRotation / 500)
+      this.data.airSpeed.setValue(airSpeed)
       this.data.groundSpeed.setValue(0) // TODO
       this.data.yaw.setValue(heading)
       this.data.pitch.setValue(pitch)
@@ -185,6 +184,7 @@ module.exports.Serial = class Serial extends EventEmitter {
       this.data.elevatorLoad.setValue(elevatorLoad)
       this.data.elevatorTemp.setValue(elevatorTemp)
       this.data.elevatorVolt.setValue(elevatorVolt)
+      this.data.freq.increment()
       for (let i = 0; i < GraphTab.tabs.length; i++) {
         GraphTab.tabs[i].emit('update', timeNow)
       }
