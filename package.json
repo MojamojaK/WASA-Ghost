@@ -23,21 +23,21 @@
   "author": "Kazuki Fujita <kazukifu@gmail.com>",
   "license": "UNLICENSED",
   "devDependencies": {
-    "electron": "^1.8.3",
-    "electron-packager": "^11.1.0",
+    "electron": "^1.8.4",
+    "electron-packager": "^11.2.0",
     "electron-rebuild": "^1.7.3",
-    "mocha": "^5.0.4",
-    "standard": "^11.0.0"
+    "mocha": "^5.0.5",
+    "standard": "^11.0.1"
   },
   "dependencies": {
     "@mapbox/geojson-area": "*",
     "@mapbox/mbtiles": "*",
     "chart.js": "*",
     "electron-settings": "*",
-    "express": "*",
+    "express": "^4.16.3",
     "jquery": "*",
-    "mapbox-gl": "^0.44.1",
-    "moment": "*",
+    "mapbox-gl": "^0.44.2",
+    "moment": "^2.22.0",
     "mv": "*",
     "serialport": "*",
     "xbee-api": "*"
