@@ -51,19 +51,20 @@ window.onload = function () {
     time: new Time(),
     freq: new Freq(),
     altitude: new Value(0, 0.01, 0, 1023, 2),
-    airSpeed: new AirSpeedValue(0, 6.15180146890866e-7, 0, 100000, 2, 0.449023921989541),
+    airSpeed: new AirSpeedValue(0, 6.15180146890866e-7, 0, 16255401, 2, 0.449023921989541),
     // 風洞試験2回目係数k: 6.12515993890615e-7
     // 風洞試験3回目係数k: 6.15180146890866e-7。
     // 機速受信値は interrupts / kiloseconds。これを meters / second に直す係数k
     // スリット数は100、FALLINGを検知するのでそのまま使う
     // 0.001 (i/ks -> i/s) * p (i/s -> m/s)
+    // 16255401 = 10 /  6.15180146890866e-7
     groundSpeed: new Value(0, 0.01, 0, 1000, 2), // TODO
-    cadence: new Value(0, 0.00046875, 0, 426666, 0),
+    cadence: new Value(0, 0.0009375, 0, 213333, 0),
     // 回転数受信値は interrupts / kiloseconds。これを rotation / minute に直す係数r
-    // スリット数は64、CHANGEを検知するので2倍で128
-    // r = 0.00046875
-    // = 0.001 (i/ks -> i/s) * 60 (i/s -> i/m)/ 128(i/m -> r/m)
-    // 426666 = 200 / 0.00046875
+    // スリット数は32、CHANGEを検知するので2倍で64
+    // r = 0.0009375
+    // = 0.001 (i/ks -> i/s) * 60 (i/s -> i/m)/ 64(i/m -> r/m)
+    // 213333 = 200 / 0.0009375
     rudder: new Value(0, 0.1, -1500, 3000, 1),
     elevator: new Value(0, 0.1, -1500, 3000, 1),
     yaw: new Value(0, 1, 0, 360, 0),
@@ -76,7 +77,11 @@ window.onload = function () {
     rudderVolt: new Value(1130, 0.01, 900, 360, 2),
     elevatorTemp: new Value(20, 1, 0, 40, 0),
     elevatorLoad: new Value(0, 1, 0, 1500, 0),
-    elevatorVolt: new Value(1130, 0.01, 900, 360, 2)
+    elevatorVolt: new Value(1130, 0.01, 900, 360, 2),
+    temperature: new Value(0, 1, 0, 40, 1),
+    humidity: new Value(50, 1, 0, 100, 0),
+    airPressure: new Value(101325, 0.01, 90000, 30000, 0)
+
   }
 
   // ツールバーの設定
@@ -127,11 +132,15 @@ window.onload = function () {
   let elevatorLoad = new Plain(data.elevatorLoad, $('#elevatorLoad'))
   let elevatorVolt = new Plain(data.elevatorVolt, $('#elevatorVolt'))
 
+  let temperature = new Plain(data.temperature, $('#temperature'))
+  let humidity = new Plain(data.humidity, $('#humidity'))
+  let airPressure = new Plain(data.airPressure, $('#air-pressure'))
+
   let speech = new Speech(data.cadence, $('#speech-icon'), $('#speech-status'), $('#speech-button'))
 
   let graphicObjects = [mapLoader, altitudeMeter, airSpeedMeter, groundSpeedMeter, cadenceGauge,
     rudderGauge, elevatorGauge, yawOrientation, pitchOrientation, rollOrientation,
-    rudderTemp, rudderLoad, rudderVolt, elevatorTemp, elevatorLoad, elevatorVolt]
+    rudderTemp, rudderLoad, rudderVolt, elevatorTemp, elevatorLoad, elevatorVolt, temperature, humidity, airPressure]
 
   let logger = new Logger(data, logKeys, $('#log-icon'), $('#log-status'), $('#log-button'), $('#log-filename'), $('#select-log-button'), $('#log-dir'))
   let graphicsManager = new GraphicsManager(graphicObjects, $('#graphic-icon'), $('#graphic-status'), $('#graphic-button'))

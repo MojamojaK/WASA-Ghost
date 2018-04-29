@@ -109,6 +109,7 @@ body {
   padding-top: 0.25vmin;
   cursor: default;
   flex-grow: 1;
+  border-right: 1px solid grey;
 }
 
 #cadenceGaugeCenter{

@@ -155,6 +155,10 @@ module.exports.Serial = class Serial extends EventEmitter {
       let latitude = (buffer[28] | buffer[29] << 8 | buffer[30] << 16 | buffer[31] << 24)
       // let satellites = buffer[41]
       // console.log('satellites:', satellites)
+      // let temperature = buffer[48] | buffer[49] << 8
+      // if (temperature & 0x8000) temperature -= 0x10000 // 2byte signed から 4byte signed に変換
+      // let pressure = buffer[50] | buffer[51] << 8 | buffer[52] << 16 | buffer[53] << 24
+      // let humidity = buffer[56] | buffer[57] << 8 | buffer[58] << 16 | buffer[59] << 24
       let rudderPos = buffer[67] | buffer[68] << 8
       if (rudderPos & 0x8000) rudderPos -= 0x10000 // 2byte signed から 4byte signed に変換
       let rudderLoad = buffer[73] | (buffer[74] << 8)
@@ -184,6 +188,9 @@ module.exports.Serial = class Serial extends EventEmitter {
       this.data.elevatorLoad.setValue(elevatorLoad)
       this.data.elevatorTemp.setValue(elevatorTemp)
       this.data.elevatorVolt.setValue(elevatorVolt)
+      /* this.data.temperature.setValue(temperature)
+      this.data.pressure.setValue(pressure)
+      this.data.humidity.setValue(humidity) */
       this.data.freq.increment()
       for (let i = 0; i < GraphTab.tabs.length; i++) {
         GraphTab.tabs[i].emit('update', timeNow)
