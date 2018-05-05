@@ -1,5 +1,5 @@
 const EventEmitter = require('events')
-const synth = window.speechSynthesis   // 喋らせるライブラリ (現在Macのみ対応) */
+const synth = window.speechSynthesis // 喋らせるライブラリ (現在Macのみ対応?)
 
 module.exports.Speech = class Speech extends EventEmitter {
   constructor (data, iconNode, statusNode, toggleNode, speechObject) {

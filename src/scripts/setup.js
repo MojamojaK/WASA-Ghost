@@ -36,8 +36,9 @@ const DegToRad = Math.PI / 180
 // ログを取る項目とそれの順番を指定できます。下の生データ辞書"data"参考
 const logKeys = ['time', 'altitude', 'airSpeed', 'groundSpeed', 'cadence', 'rudder', 'elevator', 'yaw', 'pitch', 'roll', 'latitude', 'longitude', 'rudderTemp', 'rudderLoad', 'rudderVolt', 'elevatorTemp', 'elevatorLoad', 'elevatorVolt']
 
+// 色を増やすだけで高度・機速の目盛りが増やせます
 const altimeterColor = ['#FF0000', '#C0C000', '#00A000', '#00A000', '#00A000', '#00A000', '#00A000', '#00A000', '#C0C000', '#FF0000']
-const speedMeterColor = ['#FF0000', '#FF0000', '#00A000', '#00A000', '#00A000', '#00A000', '#00A000', '#C0C000', '#C0C000', '#FF0000']
+const speedMeterColor = ['#FF0000', '#FF0000', '#00A000', '#00A000', '#00A000', '#00A000', '#00A000', '#00A000', '#00A000', '#C0C000', '#C0C000', '#FF0000']
 
 let ghostMenu = new GhostMenu()
 
@@ -58,7 +59,7 @@ window.onload = function () {
     // スリット数は100、FALLINGを検知するのでそのまま使う
     // 0.001 (i/ks -> i/s) * p (i/s -> m/s)
     // 16255401 = 10 /  6.15180146890866e-7
-    groundSpeed: new Value(0, 0.01, 0, 1000, 2), // TODO
+    groundSpeed: new Value(0, 0.001, 0, 12000, 2),
     cadence: new Value(0, 0.0009375, 0, 213333, 0),
     // 回転数受信値は interrupts / kiloseconds。これを rotation / minute に直す係数r
     // スリット数は32、CHANGEを検知するので2倍で64
@@ -78,10 +79,9 @@ window.onload = function () {
     elevatorTemp: new Value(20, 1, 0, 40, 0),
     elevatorLoad: new Value(0, 1, 0, 1500, 0),
     elevatorVolt: new Value(1130, 0.01, 900, 360, 2),
-    temperature: new Value(0, 1, 0, 40, 1),
+    temperature: new Value(0, 0.01, 0, 40, 1),
     humidity: new Value(50, 1, 0, 100, 0),
     airPressure: new Value(101325, 0.01, 90000, 30000, 0)
-
   }
 
   // ツールバーの設定
