@@ -350,12 +350,12 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.map.on('error', function () {})
   }
 }
-module.exports.MapLoader.mapDownloadURL = 'https://doc-0c-2g-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/ar6fh4oisankrtelpfqariuu2cumvbfl/1514779200000/01994137358430312811/*/1Avz1qD0XLMS6y0gjGuvwgEXrGSIdInNs?e=download'
-/* module.exports.MapLoader.mapDownloadURL = require('url').format({
-  pathname: path.join(require('os').homedir(), 'desktop', 'osm_tiles.mbtiles'),
-  protocol: 'file:',
-  slashes: true
-}) */
+module.exports.MapLoader.mapDownloadURL = 'http://www.space.tokyo.jp/ftp1/osm_tiles.mbtiles'
+//  module.exports.MapLoader.mapDownloadURL = require('url').format({
+//   pathname: path.join(require('os').homedir(), 'desktop', 'osm_tiles.mbtiles'),
+//   protocol: 'file:',
+//   slashes: true
+// })
 module.exports.MapLoader.serverLocation = 'http://localhost:3000'
 module.exports.MapLoader.mapTilesDirName = 'mapTiles'
 module.exports.MapLoader.mapStyle = {
