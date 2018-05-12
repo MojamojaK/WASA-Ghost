@@ -54,7 +54,6 @@ module.exports.Gauge = class Gauge extends EventEmitter {
     this.heightMul = []
     this.radius = 0
     this.radiusMul = []
-    this.lastValue = -1
     let tmpGauge = this
     this.windowNode.on('resize', function () { tmpGauge.updateGauge() })
     this.on('update', function () { tmpGauge.updateData() })
@@ -63,7 +62,7 @@ module.exports.Gauge = class Gauge extends EventEmitter {
 
   updateData () {
     let val = this.data.getValue()
-    if (val === this.lastValue) return
+    if (this.data.isDupe()) return
     let deg = val * this.gaugeOptions.tickMultiplier + this.gaugeOptions.tickOffset
     this.valueNode.html(val.toFixed(this.gaugeOptions.fixed))
     let tmpGauge = this

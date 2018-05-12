@@ -140,6 +140,7 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
   }
 
   updatePlaneGeoPosition () {
+    if (this.dataLongitude.isDupe() || this.dataLatitude.isDupe()) return
     this.planeNavigationPoint.coordinates[0] = this.dataLongitude.getValue()
     this.planeNavigationPoint.coordinates[1] = this.dataLatitude.getValue()
     if (this.planeSource !== null) this.planeSource.setData(this.planeNavigationPoint)

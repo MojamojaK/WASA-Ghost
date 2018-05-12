@@ -8,10 +8,14 @@ class Value extends EventEmitter {
     this.inputOffset = inputOffset
     this.inputSize = inputSize
     this.outputFixed = outputFixed
+    this.lastValue = initial
+    this.dupe = false
   }
 
   setValue (val) {
     this.value = val
+    this.dupe = this.value === this.lastValue
+    this.lastValue = this.value
     this.emit('update')
     return true
   }
@@ -26,6 +30,10 @@ class Value extends EventEmitter {
 
   setRandom () {
     this.setValue(parseInt(Math.random() * this.inputSize + this.inputOffset))
+  }
+
+  isDupe () {
+    return this.dupe
   }
 }
 

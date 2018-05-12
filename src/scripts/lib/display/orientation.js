@@ -5,7 +5,6 @@ module.exports.Orientation = class Orientation extends EventEmitter {
     super()
     this.data = data
     this.orientationNode = orientationNode
-    this.lastValue = undefined
     this.value = 0
     let tmpOrientation = this
     this.on('update', function () { tmpOrientation.setOrientation() })
@@ -13,7 +12,7 @@ module.exports.Orientation = class Orientation extends EventEmitter {
 
   setOrientation () {
     let value = this.data.getValue()
-    if (value === this.lastValue) return
+    if (this.data.isDupe()) return
     let tmpOrientation = this
     function needleStep (now) { tmpOrientation.orientationNode.css({'-webkit-transform': 'rotate(' + now + 'deg)'}) }
     this.orientationNode.animate({degree: value}, {duration: 30, step: needleStep})

@@ -66,7 +66,7 @@ module.exports.Serial = class Serial extends EventEmitter {
 
     this.connection = new SerialPort(portName, {
       autoOpen: false,
-      baudRate: 9600,
+      baudRate: 57600,
       dataBits: 8,
       stopBits: 1,
       flowControl: false
@@ -158,16 +158,16 @@ module.exports.Serial = class Serial extends EventEmitter {
       if (temperature & 0x8000) temperature -= 0x10000 // 2byte signed から 4byte signed に変換
       let airPressure = buffer[47] | buffer[48] << 8 | buffer[49] << 16 | buffer[50] << 24
       let humidity = buffer[51] | (buffer[52] << 8)
-      let rudderPos = buffer[60] | (buffer[61] << 8)
+      let rudderPos = buffer[55] | (buffer[56] << 8)
       if (rudderPos & 0x8000) rudderPos -= 0x10000 // 2byte signed から 4byte signed に変換
-      let rudderLoad = buffer[66] | (buffer[67] << 8)
-      let rudderTemp = buffer[68] | (buffer[69] << 8)
-      let rudderVolt = buffer[70] | (buffer[71] << 8)
-      let elevatorPos = buffer[79] | (buffer[80] << 8)
+      let rudderLoad = buffer[57] | (buffer[58] << 8)
+      let rudderTemp = buffer[59] | (buffer[60] << 8)
+      let rudderVolt = buffer[61] | (buffer[62] << 8)
+      let elevatorPos = buffer[65] | (buffer[66] << 8)
       if (elevatorPos & 0x8000) elevatorPos -= 0x10000 // 2byte signed から 4byte signed に変換
-      let elevatorLoad = buffer[85] | (buffer[86] << 8)
-      let elevatorTemp = buffer[87] | (buffer[88] << 8)
-      let elevatorVolt = buffer[89] | (buffer[90] << 8)
+      let elevatorLoad = buffer[67] | (buffer[68] << 8)
+      let elevatorTemp = buffer[69] | (buffer[70] << 8)
+      let elevatorVolt = buffer[71] | (buffer[72] << 8)
       let timeNow = Date.now()
       this.data.cadence.setValue(cadence)
       this.data.rudder.setValue(rudderPos)

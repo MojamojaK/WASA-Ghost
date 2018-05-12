@@ -1,6 +1,6 @@
 {
   "name": "Ghost",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "App for WASA",
   "main": "src/app.js",
   "repository": {
@@ -18,14 +18,15 @@
     "rebuild": "./node_modules/.bin/electron-rebuild",
     "build_mac": "./node_modules/.bin/electron-builder --mac --x64 --config=build-config.json",
     "build_win": "./node_modules/.bin/electron-builder --win --x64 --config=build-config.json",
-    "build_linux": "./node_modules/.bin/electron-builder --linux --x64 --config=build-config.json"
+    "build_linux": "./node_modules/.bin/electron-builder --linux --x64 --config=build-config.json",
+    "postinstall": "electron-builder install-app-deps"
   },
   "author": "Kazuki Fujita <kazukifu@gmail.com>",
   "license": "UNLICENSED",
   "devDependencies": {
-    "electron": "*",
-    "electron-builder": "*",
-    "electron-packager": "^12.0.1",
+    "electron": "^2.0.0",
+    "electron-builder": "^20.13.3",
+    "electron-packager": "^12.0.2",
     "electron-rebuild": "*",
     "mocha": "*",
     "standard": "*"
@@ -37,7 +38,7 @@
     "electron-settings": "*",
     "express": "*",
     "jquery": "*",
-    "mapbox-gl": "*",
+    "mapbox-gl": "^0.45.0",
     "moment": "^2.22.1",
     "mv": "*",
     "serialport": "*",

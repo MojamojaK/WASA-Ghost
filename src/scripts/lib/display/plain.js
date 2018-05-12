@@ -10,6 +10,7 @@ module.exports.Plain = class Value extends EventEmitter {
   }
 
   update () {
+    if (this.data.isDupe()) return
     this.valueNode.html(this.data.getValue())
   }
 }
