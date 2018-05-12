@@ -27,7 +27,7 @@
     "electron": "^2.0.0",
     "electron-builder": "^20.13.3",
     "electron-packager": "^12.0.2",
-    "electron-rebuild": "*",
+    "electron-rebuild": "^1.7.3",
     "mocha": "*",
     "standard": "*"
   },
@@ -41,7 +41,7 @@
     "mapbox-gl": "^0.45.0",
     "moment": "^2.22.1",
     "mv": "*",
-    "serialport": "*",
+    "serialport": "^6.2.0",
     "xbee-api": "*"
   },
   "homepage": "https://github.com/MojamojaK/WASA-ghost",
