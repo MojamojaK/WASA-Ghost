@@ -55,7 +55,9 @@ function createWindow () {
   }))
 
   // (デバッグ用) デベロッパ用ツールを開く
-  mainWindow.webContents.openDevTools()
+  // mainWindow.webContents.openDevTools()
+
+  mainWindow.webContents.setFrameRate(30)
 
   console.log('Opened Ghost on platform =', process.platform)
 
@@ -161,6 +163,7 @@ function createWindow () {
     }
   })
 }
+
 // ウィンドウ生成準備完了時に発生するイベントに対するハンドラー設定
 app.on('ready', createWindow)
 

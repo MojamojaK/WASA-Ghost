@@ -92,6 +92,65 @@
 		</div>
 
 		<div class='main-inner' style='width:50%;'>
+			<div class='vert-wrapper' style='position: absolute; width: 100%;'>
+				<div class='vert-inner hori-wrapper' style='width:80%;'>
+					<div class='status hori-inner'>IMU Calibration Status: </div>
+					<div class='status hori-inner hori-wrapper'>
+						<div class='hori-inner'>System:</div>
+						<div class='hori-inner' id='cal-system'>0</div>
+					</div>
+					<div class='status hori-inner hori-wrapper'>
+						<div class='hori-inner'>Accel:</div>
+						<div class='hori-inner' id='cal-accel'>0</div>
+					</div>
+					<div class='status hori-inner hori-wrapper'>
+						<div class='hori-inner'>Gyro:</div>
+						<div class='hori-inner' id='cal-gyro'>0</div>
+					</div>
+					<div class='status hori-inner hori-wrapper'>
+						<div class='hori-inner'>Mag:</div>
+						<div class='hori-inner' id='cal-mag'>0</div>
+					</div>
+				</div>
+				<div class='vert-inner hori-wrapper' style='width: 80%'>
+					<div class='status hori-inner'>GPS Status:</div>
+					<div class='status hori-inner hori-wrapper'>
+						<div class='hori-inner'>Satellites:</div>
+						<div class='hori-inner' id='gps-satellites'>0</div>
+					</div>
+					<div class='status hori-inner hori-wrapper'>
+						<div class='hori-inner'>HDOP:</div>
+						<div class='hori-inner' id='gps-hdop'>999</div>
+					</div>
+					<div class='status hori-inner hori-wrapper'>
+						<div class='hori-inner'>Altitude:</div>
+						<div class='hori-inner' id='gps-altitude'>0</div>
+					</div>
+					<div class='status hori-inner hori-wrapper'>
+						<div class='hori-inner'>LngError:</div>
+						<div class='hori-inner' id='gps-longitude-error'>0</div>
+					</div>
+					<div class='status hori-inner hori-wrapper'>
+						<div class='hori-inner'>LatError:</div>
+						<div class='hori-inner' id='gps-latitude-error'>0</div>
+					</div>
+				</div>
+				<div class='vert-inner hori-wrapper' style='width: 80%'>
+					<div class='status hori-inner'>Orientation:</div>
+					<div class='status hori-inner hori-wrapper'>
+						<div class='hori-inner'>Pitch:</div>
+						<div class='hori-inner' id='orientation-pitch'>0</div>
+					</div>
+					<div class='status hori-inner hori-wrapper'>
+						<div class='hori-inner'>Roll:</div>
+						<div class='hori-inner' id='orientation-roll'>0</div>
+					</div>
+					<div class='status hori-inner hori-wrapper'>
+						<div class='hori-inner'>Yaw:</div>
+						<div class='hori-inner' id='orientation-yaw'>0</div>
+					</div>
+				</div>
+			</div>
 			<div id='map'>
 				<div id='mapDragDrop'>
 					<div id='drag-drop-layover'>Loading...</div>

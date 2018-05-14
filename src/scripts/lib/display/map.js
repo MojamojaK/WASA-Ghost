@@ -9,11 +9,14 @@ const {MenuItem, dialog} = remote
 const settings = require('electron-settings')
 
 module.exports.MapLoader = class MapLoader extends EventEmitter {
-  constructor (dataLongitude, dataLatitude, dataYaw, menu, accessToken, mapNode, mapDragDropNode, mapImportButtonNode) {
+  constructor (dataLongitude, dataLatitude, dataYaw, dataLongitudeError, dataLatitudeError, dataHdop, menu, accessToken, mapNode, mapDragDropNode, mapImportButtonNode) {
     super()
     this.dataLongitude = dataLongitude
     this.dataLatitude = dataLatitude
     this.dataYaw = dataYaw
+    this.dataLongitudeError = dataLongitudeError
+    this.dataLatitudeError = dataLatitudeError
+    this.dataHdop = dataHdop
     this.menu = menu
     this.map = null
     this.mapTilesDirectory = path.join(path.dirname(settings.file()), this.constructor.mapTilesDirName)
@@ -140,9 +143,16 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
   }
 
   updatePlaneGeoPosition () {
-    if (this.dataLongitude.isDupe() || this.dataLatitude.isDupe()) return
+    if (this.dataLongitude.isDupe() && this.dataLatitude.isDupe() && this.dataHdop.isDupe() && this.dataLongitudeError.isDupe() && this.dataLatitudeError.isDupe()) return
     this.planeNavigationPoint.coordinates[0] = this.dataLongitude.getValue()
     this.planeNavigationPoint.coordinates[1] = this.dataLatitude.getValue()
+    if (!(this.map === null || this.map.getSource('planeCircle') === null)) {
+      if (this.map.getSource('planeCircle') !== undefined) {
+        let lngCalcError = this.dataLongitudeError.getValue() * this.dataHdop.getValue() * 2
+        let latCalcError = this.dataLatitudeError.getValue() * this.dataHdop.getValue() * 2
+        this.map.getSource('planeCircle').setData(this.createGeoJSONEclipse(this.planeNavigationPoint.coordinates, lngCalcError, latCalcError).data)
+      }
+    }
     if (this.planeSource !== null) this.planeSource.setData(this.planeNavigationPoint)
   }
 
@@ -311,6 +321,19 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
         }
       })
 
+      tmpMap.addSource('planeCircle', mapLoader.createGeoJSONEclipse(mapLoader.planeNavigationPoint.coordinates, 10, 10))
+
+      tmpMap.addLayer({
+        'id': 'planeCircle',
+        'type': 'fill',
+        'source': 'planeCircle',
+        'layout': {},
+        'paint': {
+          'fill-color': 'blue',
+          'fill-opacity': 0.6
+        }
+      })
+
       tmpMap.addSource('planeNav', {
         type: 'geojson',
         data: mapLoader.planeNavigationPoint
@@ -348,6 +371,46 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     })
 
     this.map.on('error', function () {})
+  }
+
+  createGeoJSONEclipse (center, radiusInMetersX, radiusInMetersY, points) {
+    if (!points) points = 64
+
+    let coords = {
+      latitude: center[1],
+      longitude: center[0]
+    }
+
+    let kmX = radiusInMetersX / 1000
+    let kmY = radiusInMetersY / 1000
+
+    let ret = []
+    let distanceX = kmX / (111.320 * Math.cos(coords.latitude * Math.PI / 180))
+    let distanceY = kmY / 110.574
+
+    let theta, x, y
+    for (let i = 0; i < points; i++) {
+      theta = (i / points) * (2 * Math.PI)
+      x = distanceX * Math.cos(theta)
+      y = distanceY * Math.sin(theta)
+
+      ret.push([coords.longitude + x, coords.latitude + y])
+    }
+    ret.push(ret[0])
+
+    return {
+      'type': 'geojson',
+      'data': {
+        'type': 'FeatureCollection',
+        'features': [{
+          'type': 'Feature',
+          'geometry': {
+            'type': 'Polygon',
+            'coordinates': [ret]
+          }
+        }]
+      }
+    }
   }
 }
 module.exports.MapLoader.mapDownloadURL = 'http://www.space.tokyo.jp/ftp1/osm_tiles.mbtiles'

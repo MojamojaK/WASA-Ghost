@@ -239,6 +239,12 @@ body {
   z-index: 100;
 }
 
+.status{
+  z-index: 31;
+  pointer-events: none;
+  font-size: 1.5vmin;
+}
+
 #ypr{
   position: absolute;
   top: 10vmin;

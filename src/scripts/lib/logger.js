@@ -4,18 +4,19 @@ const fs = require('fs')
 const {dialog} = require('electron').remote
 const EventEmitter = require('events')
 const settings = require('electron-settings')
+const Tone = require('tone')
 
 class Logger extends EventEmitter {
   constructor (data, logKeys, iconNode, statusNode, toggleNode, fileNameNode, dirSelectNode, dirNode) {
     super()
     this.data = data
     this.logKeys = logKeys
-    this.iconNode = iconNode            // トグルボタンの絵アイコン
-    this.statusNode = statusNode        // ONかOFFかの文字を表示する
-    this.toggleNode = toggleNode        // トグルボタン
-    this.fileNameNode = fileNameNode    // ログを入れるファイル名
-    this.dirSelectNode = dirSelectNode  // ログを入れるディレクトリを選択するためのボタン
-    this.dirNode = dirNode              // ログを入れるディレクトリ名
+    this.iconNode = iconNode // トグルボタンの絵アイコン
+    this.statusNode = statusNode // ONかOFFかの文字を表示する
+    this.toggleNode = toggleNode // トグルボタン
+    this.fileNameNode = fileNameNode // ログを入れるファイル名
+    this.dirSelectNode = dirSelectNode // ログを入れるディレクトリを選択するためのボタン
+    this.dirNode = dirNode // ログを入れるディレクトリ名
     this.logDirectory = settings.get('log.dirName', path.join(os.homedir(), 'documents', 'GhostLogs'))
     this.enabled = false
     this.unlocked = true
@@ -94,11 +95,26 @@ class Logger extends EventEmitter {
   }
 
   open () {
-    console.log('openning logger')
-    this.toggling = false
-    this.enabled = true
-    this.statusNode.html('Logging...')
-    this.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'log-on.png'))
+    let logger = this
+    setTimeout(function () {
+      console.log('openning logger')
+      logger.toggling = false
+      logger.enabled = true
+      logger.statusNode.html('Logging...')
+      logger.iconNode.attr('src', path.join(path.dirname(path.dirname(__dirname)), 'static', 'log-on.png'))
+      logger.emit('data')
+    }, 1500)
+    let synth = new Tone.Synth().toMaster()
+    synth.triggerAttackRelease('C4', '8n')
+    setTimeout(function () {
+      synth.triggerAttackRelease('C4', '8n')
+      setTimeout(function () {
+        synth.triggerAttackRelease('C4', '8n')
+        setTimeout(function () {
+          synth.triggerAttackRelease('C5', '8n')
+        }, 500)
+      }, 500)
+    }, 500)
   }
 
   close () {

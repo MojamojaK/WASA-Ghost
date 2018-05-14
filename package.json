@@ -42,6 +42,7 @@
     "moment": "^2.22.1",
     "mv": "*",
     "serialport": "^6.2.0",
+    "tone": "^0.12.80",
     "xbee-api": "*"
   },
   "homepage": "https://github.com/MojamojaK/WASA-ghost",

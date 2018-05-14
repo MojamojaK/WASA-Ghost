@@ -68,11 +68,21 @@ window.onload = function () {
     // 213333 = 200 / 0.0009375
     rudder: new Value(0, 0.1, -1500, 3000, 1),
     elevator: new Value(0, 0.1, -1500, 3000, 1),
-    yaw: new Value(0, 1, 0, 360, 0),
+    yaw: new Value(360, 1, 0, 360, 0),
     pitch: new Value(0, 0.01, 0, 36000, 1),
     roll: new Value(0, 0.01, 0, 36000, 1),
+    calSystem: new Value(0, 1, 0, 4, 0),
+    calAccel: new Value(0, 1, 0, 4, 0),
+    calGyro: new Value(0, 1, 0, 4, 0),
+    calMag: new Value(0, 1, 0, 4, 0),
     longitude: new Value(1395238890, 0.0000001, 1395188890, 100000, 6), // MAYBE TODO
     latitude: new Value(359752780, 0.0000001, 359702780, 100000, 6), // MAYBE TODO
+    satellites: new Value(0, 1, 0, 12, 0),
+    hdop: new Value(0, 0.01, 1, 99999, 2),
+    longitudeError: new Value(50, 0.1, 0, 1000, 1),
+    latitudeError: new Value(50, 0.1, 0, 1000, 1),
+    gpsAltitude: new Value(0, 0.01, 1, 1000, 2),
+    gpsCourse: new Value(0, 0.01, 0, 36000, 2),
     rudderTemp: new Value(20, 1, 0, 40, 0),
     rudderLoad: new Value(0, 1, 0, 1500, 0),
     rudderVolt: new Value(1130, 0.01, 900, 360, 2),
@@ -109,7 +119,13 @@ window.onload = function () {
   let freqDisplay = new FreqDisplay(data.time, data.freq, $('#freq-display'))
   let clock = new Clock(data.time, $('#date-display'), $('#time-display'))
 
-  let mapLoader = new MapLoader(data.longitude, data.latitude, data.yaw, ghostMenu, 'NOT-REQUIRED-WITH-YOUR-VECTOR-TILES-DATA', $('#map'), $('#mapDragDrop'), $('#import-map-button'))
+  let mapLoader = new MapLoader(data.longitude, data.latitude, data.yaw, data.longitudeError, data.latitudeError, data.hdop, ghostMenu, 'NOT-REQUIRED-WITH-YOUR-VECTOR-TILES-DATA', $('#map'), $('#mapDragDrop'), $('#import-map-button'))
+
+  let gpsSatellite = new Plain(data.satellites, $('#gps-satellites'))
+  let gpsHdop = new Plain(data.hdop, $('#gps-hdop'))
+  let gpsAltitude = new Plain(data.gpsAltitude, $('#gps-altitude'))
+  let longitudeError = new Plain(data.longitudeError, $('#gps-longitude-error'))
+  let latitudeError = new Plain(data.latitudeError, $('#gps-latitude-error'))
 
   let altitudeMeter = new MeterInfo(data.altitude, $('#altitudeMeterArrow'), $('#altitudeMeterValue'))
   let airSpeedMeter = new MeterInfo(data.airSpeed, $('#airSpeedMeterArrow'), $('#airSpeedMeterValue'))
@@ -125,6 +141,15 @@ window.onload = function () {
   let pitchOrientation = new Orientation(data.pitch, $('#pitchPlane'))
   let rollOrientation = new Orientation(data.roll, $('#rollPlane'))
 
+  let yawValue = new Plain(data.yaw, $('#orientation-yaw'), -360)
+  let pitchValue = new Plain(data.pitch, $('#orientation-pitch'))
+  let rollValue = new Plain(data.roll, $('#orientation-roll'))
+
+  let calSystem = new Plain(data.calSystem, $('#cal-system'))
+  let calAccel = new Plain(data.calAccel, $('#cal-accel'))
+  let calGyro = new Plain(data.calGyro, $('#cal-gyro'))
+  let calMag = new Plain(data.calMag, $('#cal-mag'))
+
   let rudderTemp = new Plain(data.rudderTemp, $('#rudderTemp'))
   let rudderLoad = new Plain(data.rudderLoad, $('#rudderLoad'))
   let rudderVolt = new Plain(data.rudderVolt, $('#rudderVolt'))
@@ -138,8 +163,8 @@ window.onload = function () {
 
   let speech = new Speech(data.cadence, $('#speech-icon'), $('#speech-status'), $('#speech-button'))
 
-  let graphicObjects = [mapLoader, altitudeMeter, airSpeedMeter, groundSpeedMeter, cadenceGauge,
-    rudderGauge, elevatorGauge, yawOrientation, pitchOrientation, rollOrientation,
+  let graphicObjects = [mapLoader, gpsSatellite, gpsHdop, gpsAltitude, longitudeError, latitudeError, altitudeMeter, airSpeedMeter, groundSpeedMeter, cadenceGauge,
+    rudderGauge, elevatorGauge, yawOrientation, pitchOrientation, rollOrientation, yawValue, pitchValue, rollValue, calSystem, calAccel, calGyro, calMag,
     rudderTemp, rudderLoad, rudderVolt, elevatorTemp, elevatorLoad, elevatorVolt, temperature, humidity, airPressure]
 
   let logger = new Logger(data, logKeys, $('#log-icon'), $('#log-status'), $('#log-button'), $('#log-filename'), $('#select-log-button'), $('#log-dir'))
