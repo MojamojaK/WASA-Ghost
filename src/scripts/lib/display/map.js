@@ -8,8 +8,11 @@ const {remote, ipcRenderer, shell} = require('electron')
 const {MenuItem, dialog} = remote
 const settings = require('electron-settings')
 
+const DegToRad = Math.PI / 180
+
 module.exports.MapLoader = class MapLoader extends EventEmitter {
-  constructor (dataLongitude, dataLatitude, dataYaw, dataLongitudeError, dataLatitudeError, dataHdop, menu, accessToken, mapNode, mapDragDropNode, mapImportButtonNode) {
+  constructor (dataLongitude, dataLatitude, dataYaw, dataLongitudeError, dataLatitudeError, dataHdop, dataAccelX, dataAccelY,
+    menu, accessToken, mapNode, mapDragDropNode, mapImportButtonNode) {
     super()
     this.dataLongitude = dataLongitude
     this.dataLatitude = dataLatitude
@@ -17,6 +20,8 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.dataLongitudeError = dataLongitudeError
     this.dataLatitudeError = dataLatitudeError
     this.dataHdop = dataHdop
+    this.dataAccelX = dataAccelX
+    this.dataAccelY = dataAccelY
     this.menu = menu
     this.map = null
     this.mapTilesDirectory = path.join(path.dirname(settings.file()), this.constructor.mapTilesDirName)
@@ -28,20 +33,22 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.downloadNode = undefined
     this.downloadStatusListener = undefined
     this.downloadStateListener = undefined
-    this.yaw = 0
     this.planeNavigationPoint = {
       type: 'Point',
       coordinates: [139.523889, 35.975278]
     }
     this.tileURLs = []
+    this.planeSource = null
+    this.planeCircle = null
+    this.accelArrowVisible = true
+    this.createAccelArrow()
     this.createPlaneNav()
     this.setupClickEvents()
     this.setupDragDropEvents()
     this.setupMenu()
     let mapLoader = this
     this.on('load', function () { mapLoader.drawMap() })
-    this.on('update', function () { mapLoader.updatePlaneOrientation() })
-    this.on('update', function () { mapLoader.updatePlaneGeoPosition() })
+    this.on('update', function () { mapLoader.updatePlane() })
     this.attempMapLoad()
   }
 
@@ -62,17 +69,16 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
   }
 
   createPlaneNav () {
-    this.planeSource = null
     this.planeWidth = 128
     this.planeData = new Uint8Array(this.planeWidth * this.planeWidth * 4)
     for (let i = 0; i < this.planeWidth; i++) {
       for (let j = 0; j < this.planeWidth; j++) {
         let offset = (j * this.planeWidth + i) * 4
         if ((i >= 61 && i <= 66) || (j >= 23 && j <= 28)) {
-          this.planeData[offset + 0] = 255
-          this.planeData[offset + 1] = 0
-          this.planeData[offset + 2] = 0
-          this.planeData[offset + 3] = 255
+          this.planeData[offset + 0] = 255 // R
+          this.planeData[offset + 1] = 0 // G
+          this.planeData[offset + 2] = 0 // B
+          this.planeData[offset + 3] = 255 // A
         }
       }
     }
@@ -80,6 +86,40 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
       width: this.planeWidth,
       height: this.planeWidth,
       data: this.planeData
+    }
+  }
+
+  createAccelArrow () {
+    this.arrowWidth = 128
+    this.arrowWidthHalf = this.arrowWidth / 2
+    this.arrowData = new Uint8Array(this.arrowWidth * this.arrowWidth * 4)
+    for (let i = 0; i < this.arrowWidth; i++) {
+      for (let j = 0; j <= this.arrowWidth; j++) { // タテの線を書く
+        let sum = i + j
+        if (j >= 61 && j <= 66) {
+          let offset = (i * this.arrowWidth + j) * 4
+          this.arrowData[offset + 0] = 255
+          this.arrowData[offset + 1] = 0
+          this.arrowData[offset + 2] = 255
+          this.arrowData[offset + 3] = 255
+        } else if (sum >= this.arrowWidthHalf - 3 && sum <= this.arrowWidthHalf + 3) {
+          let offset = (i * this.arrowWidth + j) * 4
+          this.arrowData[offset + 0] = 255
+          this.arrowData[offset + 1] = 0
+          this.arrowData[offset + 2] = 255
+          this.arrowData[offset + 3] = 255
+          let xFlipOffset = (i * this.arrowWidth + this.arrowWidth - j - 1) * 4
+          this.arrowData[xFlipOffset + 0] = 255
+          this.arrowData[xFlipOffset + 1] = 0
+          this.arrowData[xFlipOffset + 2] = 255
+          this.arrowData[xFlipOffset + 3] = 255
+        }
+      }
+    }
+    this.arrowImage = {
+      width: this.arrowWidth,
+      height: this.arrowWidth,
+      data: this.arrowData
     }
   }
 
@@ -138,22 +178,52 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     }))
   }
 
-  updatePlaneOrientation () {
-    if (this.map !== null) this.map.setLayoutProperty('planeImage', 'icon-rotate', this.dataYaw.getValue())
-  }
+  updatePlane () {
+    // 位置情報の更新
+    if (!(this.dataLongitude.isDupe() || this.dataLatitude.isDupe())) {
+      this.planeNavigationPoint.coordinates[0] = this.dataLongitude.getValue()
+      this.planeNavigationPoint.coordinates[1] = this.dataLatitude.getValue()
+      if (this.planeSource !== null) this.planeSource.setData(this.planeNavigationPoint)
+    }
 
-  updatePlaneGeoPosition () {
-    if (this.dataLongitude.isDupe() && this.dataLatitude.isDupe() && this.dataHdop.isDupe() && this.dataLongitudeError.isDupe() && this.dataLatitudeError.isDupe()) return
-    this.planeNavigationPoint.coordinates[0] = this.dataLongitude.getValue()
-    this.planeNavigationPoint.coordinates[1] = this.dataLatitude.getValue()
-    if (!(this.map === null || this.map.getSource('planeCircle') === null)) {
-      if (this.map.getSource('planeCircle') !== undefined) {
+    // 誤差楕円の更新
+    if (!(this.dataLongitude.isDupe() || this.dataLatitude.isDupe() || this.dataHdop.isDupe() || this.dataLongitudeError.isDupe() || this.dataLatitudeError.isDupe())) {
+      if (this.planeCircle !== null) {
         let lngCalcError = this.dataLongitudeError.getValue() * this.dataHdop.getValue() * 2
         let latCalcError = this.dataLatitudeError.getValue() * this.dataHdop.getValue() * 2
-        this.map.getSource('planeCircle').setData(this.createGeoJSONEclipse(this.planeNavigationPoint.coordinates, lngCalcError, latCalcError).data)
+        this.planeCircle.setData(this.createGeoJSONEclipse(this.planeNavigationPoint.coordinates, lngCalcError, latCalcError).data)
       }
     }
-    if (this.planeSource !== null) this.planeSource.setData(this.planeNavigationPoint)
+
+    // 機首方向の更新
+    if (!this.dataYaw.isDupe()) {
+      if (this.map !== null) this.map.setLayoutProperty('planeImage', 'icon-rotate', this.dataYaw.getValue())
+    }
+
+    // 加速度方向の更新
+    if (!(this.dataAccelX.isDupe() || this.dataAccelY.isDupe() || this.dataYaw.isDupe())) {
+      let accelX = this.dataAccelX.getValue()
+      let accelY = this.dataAccelY.getValue()
+      let accel = Math.sqrt(accelX * accelX + accelY * accelY)
+      if (accel > 1) {
+        let accelAngle = this.dataYaw.getValue() + Math.atan(accelX / accelY) / DegToRad // 加速度矢印の角度(degree)
+        if (accelY < 0) accelAngle += 180
+        if (this.map !== null) {
+          if (!this.accelArrowVisible) {
+            this.map.setLayoutProperty('arrowImage', 'visibility', 'visible')
+            this.accelArrowVisible = true
+          }
+          this.map.setLayoutProperty('arrowImage', 'icon-rotate', accelAngle)
+        }
+      } else {
+        if (this.map !== null) {
+          if (this.accelArrowVisible) {
+            this.map.setLayoutProperty('arrowImage', 'visibility', 'none')
+            this.accelArrowVisible = false
+          }
+        }
+      }
+    }
   }
 
   attempMapLoad () {
@@ -303,17 +373,19 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.constructor.mapStyle.sources['openmaptiles-japan'].tiles = this.tileURLs
     this.map = new mapboxgl.Map(this.constructor.mapOptions)
     let mapLoader = this
-    let tmpMap = this.map
+    let mapBoxMap = this.map
     this.map.on('load', function () {
-      tmpMap.addControl(new mapboxgl.NavigationControl(), 'top-right')
+      // ズーム・方向ボタンの設置
+      mapBoxMap.addControl(new mapboxgl.NavigationControl(), 'top-right')
 
+      // マウスの挙動設定
       let propertyList = $('#propertyList')
-      tmpMap.on('mousemove', function (e) {
+      mapBoxMap.on('mousemove', function (e) {
         // mapLoader.dataLatitude.setValue(e.lngLat.lat)
         // mapLoader.dataLongitude.setValue(e.lngLat.lng)
-        // mapLoader.updatePlaneGeoPosition()
+        // mapLoader.updatePlane()
         propertyList.empty()
-        let features = tmpMap.queryRenderedFeatures(e.point, {radius: 100})
+        let features = mapBoxMap.queryRenderedFeatures(e.point, {radius: 100})
         if (features[0]) {
           propertyList.html(JSON.stringify(e.lngLat, null, 2) + '<br/>' + JSON.stringify(features[0].properties, null, 2))
         } else {
@@ -321,9 +393,10 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
         }
       })
 
-      tmpMap.addSource('planeCircle', mapLoader.createGeoJSONEclipse(mapLoader.planeNavigationPoint.coordinates, 10, 10))
-
-      tmpMap.addLayer({
+      // 誤差楕円の設置
+      mapBoxMap.addSource('planeCircle', mapLoader.createGeoJSONEclipse(mapLoader.planeNavigationPoint.coordinates, 10, 10))
+      mapLoader.planeCircle = mapBoxMap.getSource('planeCircle')
+      mapBoxMap.addLayer({
         'id': 'planeCircle',
         'type': 'fill',
         'source': 'planeCircle',
@@ -334,27 +407,52 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
         }
       })
 
-      tmpMap.addSource('planeNav', {
+      // 機体位置情報のソース設定
+      mapBoxMap.addSource('planeNav', {
         type: 'geojson',
         data: mapLoader.planeNavigationPoint
       })
-      mapLoader.planeSource = tmpMap.getSource('planeNav')
+      mapLoader.planeSource = mapBoxMap.getSource('planeNav')
 
-      tmpMap.addImage('planeImage', mapLoader.planeImage)
-      tmpMap.addLayer({
-        id: 'planeImage',
-        type: 'symbol',
-        source: 'planeNav',
-        layout: {
-          'icon-image': 'planeImage',
-          'icon-size': 1.0,
-          'icon-offset': [0, 39],
-          'icon-rotation-alignment': 'map'
-        }
-      })
+      // 加速度矢印の設定・設置
+      if (mapLoader.arrowImage !== null) {
+        mapBoxMap.addImage('arrowImage', mapLoader.arrowImage)
+        mapBoxMap.addLayer({
+          'id': 'arrowImage',
+          'type': 'symbol',
+          'source': 'planeNav',
+          'layout': {
+            'icon-image': 'arrowImage',
+            'icon-size': 1.0,
+            'icon-offset': [0, -63],
+            'icon-rotation-alignment': 'map',
+            'icon-allow-overlap': true,
+            'icon-ignore-placement': true
+          }
+        })
+      }
 
-      tmpMap.on('click', 'okegawa_point', function (e) {
-        tmpMap.flyTo({
+      // 機体位置の設定・設置
+      if (mapLoader.planeImage !== null) {
+        mapBoxMap.addImage('planeImage', mapLoader.planeImage)
+        mapBoxMap.addLayer({
+          id: 'planeImage',
+          type: 'symbol',
+          source: 'planeNav',
+          layout: {
+            'icon-image': 'planeImage',
+            'icon-size': 1.0,
+            'icon-offset': [0, 39],
+            'icon-rotation-alignment': 'map',
+            'icon-allow-overlap': true,
+            'icon-ignore-placement': true
+          }
+        })
+      }
+
+      // 桶川ポイントの設置
+      mapBoxMap.on('click', 'okegawa_point', function (e) {
+        mapBoxMap.flyTo({
           center: e.features[0].geometry.coordinates,
           zoom: 13,
           speed: 0.9,
@@ -365,16 +463,16 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
         })
       })
 
-      let mapCanvas = tmpMap.getCanvas()
-      tmpMap.on('mouseenter', 'okegawa_point', function () { mapCanvas.style.cursor = 'pointer' })
-      tmpMap.on('mouseleave', 'okegawa_point', function () { mapCanvas.style.cursor = '' })
+      let mapCanvas = mapBoxMap.getCanvas()
+      mapBoxMap.on('mouseenter', 'okegawa_point', function () { mapCanvas.style.cursor = 'pointer' })
+      mapBoxMap.on('mouseleave', 'okegawa_point', function () { mapCanvas.style.cursor = '' })
     })
 
     this.map.on('error', function () {})
   }
 
-  createGeoJSONEclipse (center, radiusInMetersX, radiusInMetersY, points) {
-    if (!points) points = 64
+  createGeoJSONEclipse (center, radiusInMetersX, radiusInMetersY, pointCount) {
+    if (!pointCount) pointCount = 64
 
     let coords = {
       latitude: center[1],
@@ -385,12 +483,12 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     let kmY = radiusInMetersY / 1000
 
     let ret = []
-    let distanceX = kmX / (111.320 * Math.cos(coords.latitude * Math.PI / 180))
+    let distanceX = kmX / (111.320 * Math.cos(coords.latitude * DegToRad))
     let distanceY = kmY / 110.574
 
     let theta, x, y
-    for (let i = 0; i < points; i++) {
-      theta = (i / points) * (2 * Math.PI)
+    for (let i = 0; i < pointCount; i++) {
+      theta = (i / pointCount) * (2 * Math.PI)
       x = distanceX * Math.cos(theta)
       y = distanceY * Math.sin(theta)
 
@@ -398,7 +496,7 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     }
     ret.push(ret[0])
 
-    return {
+    let geojson = {
       'type': 'geojson',
       'data': {
         'type': 'FeatureCollection',
@@ -411,6 +509,7 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
         }]
       }
     }
+    return geojson
   }
 }
 module.exports.MapLoader.mapDownloadURL = 'http://www.space.tokyo.jp/ftp1/osm_tiles.mbtiles'

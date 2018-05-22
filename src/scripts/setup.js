@@ -33,10 +33,7 @@ const windowNode = $(window)
 
 const DegToRad = Math.PI / 180
 
-// ログを取る項目とそれの順番を指定できます。下の生データ辞書"data"参考
-const logKeys = ['time', 'altitude', 'airSpeed', 'groundSpeed', 'cadence', 'rudder', 'elevator', 'yaw', 'pitch', 'roll', 'latitude', 'longitude', 'rudderTemp', 'rudderLoad', 'rudderVolt', 'elevatorTemp', 'elevatorLoad', 'elevatorVolt']
-
-// 色を増やすだけで高度・機速の目盛りが増やせます
+// 色を増やすだけで高度・機速の目盛りが増やせます (たぶん下から順です)
 const altimeterColor = ['#FF0000', '#C0C000', '#00A000', '#00A000', '#00A000', '#00A000', '#00A000', '#00A000', '#C0C000', '#FF0000']
 const speedMeterColor = ['#FF0000', '#FF0000', '#00A000', '#00A000', '#00A000', '#00A000', '#00A000', '#00A000', '#00A000', '#C0C000', '#C0C000', '#FF0000']
 
@@ -45,6 +42,13 @@ let ghostMenu = new GhostMenu()
 const cadenceOptions = new GaugeOptions(true, DegToRad * 0.9, Math.PI, 0, false, 0, 200, 0, 0, 50, -90, 0.9, 0, 1, 0, [0.5, 0.4, 0.4], [0.6, 0.6, 0.6])
 const rudderOptions = new GaugeOptions(false, DegToRad, 2 * Math.PI / 3 * 0.99, Math.PI / 3 * 1.01, false, -60, 240, 0, 180, 30, 0, 1, -90, 1, 1, [0.5, 1, 0.5], [0.5, 1, 0.5])
 const elevatorOptions = new GaugeOptions(false, DegToRad, 5 * Math.PI / 6, 7 * Math.PI / 6, true, -60, 240, 90, 180, 30, 90, -1, -90, -1, 1, [0.5, 1, 0.5], [0.5, 1, 0.5])
+
+// ログを取る項目とそれの順番を指定できます。下の生データ辞書"data"参考
+const logKeys = ['time', 'altitude', 'airSpeed', 'groundSpeed', 'cadence', 'rudder', 'elevator',
+  'yaw', 'pitch', 'roll', 'accelX', 'accelY', 'accelZ', 'calSystem', 'calAccel', 'calGyro', 'calMag',
+  'longitude', 'latitude', 'satellites', 'hdop', 'longitudeError', 'latitudeError', 'gpsAltitude', 'gpsCourse',
+  'rudderTemp', 'rudderLoad', 'rudderVolt', 'elevatorTemp', 'elevatorLoad', 'elevatorVolt',
+  'temperature', 'humidity', 'airPressure']
 
 window.onload = function () {
   // 生データの辞書
@@ -68,6 +72,9 @@ window.onload = function () {
     // 213333 = 200 / 0.0009375
     rudder: new Value(0, 0.1, -1500, 3000, 1),
     elevator: new Value(0, 0.1, -1500, 3000, 1),
+    accelX: new Value(0, 0.01, -2000, 4000, 2),
+    accelY: new Value(0, 0.01, -2000, 4000, 2),
+    accelZ: new Value(0, 0.01, -2000, 4000, 2),
     yaw: new Value(360, 1, 0, 360, 0),
     pitch: new Value(0, 0.01, 0, 36000, 1),
     roll: new Value(0, 0.01, 0, 36000, 1),
@@ -75,10 +82,10 @@ window.onload = function () {
     calAccel: new Value(0, 1, 0, 4, 0),
     calGyro: new Value(0, 1, 0, 4, 0),
     calMag: new Value(0, 1, 0, 4, 0),
-    longitude: new Value(1395238890, 0.0000001, 1395188890, 100000, 6), // MAYBE TODO
-    latitude: new Value(359752780, 0.0000001, 359702780, 100000, 6), // MAYBE TODO
+    longitude: new Value(1395238890, 0.0000001, 1395188890, 100000, 6),
+    latitude: new Value(359752780, 0.0000001, 359702780, 100000, 6),
     satellites: new Value(0, 1, 0, 12, 0),
-    hdop: new Value(0, 0.01, 1, 99999, 2),
+    hdop: new Value(0, 0.01, 1, 3000, 2),
     longitudeError: new Value(50, 0.1, 0, 1000, 1),
     latitudeError: new Value(50, 0.1, 0, 1000, 1),
     gpsAltitude: new Value(0, 0.01, 1, 1000, 2),
@@ -119,7 +126,8 @@ window.onload = function () {
   let freqDisplay = new FreqDisplay(data.time, data.freq, $('#freq-display'))
   let clock = new Clock(data.time, $('#date-display'), $('#time-display'))
 
-  let mapLoader = new MapLoader(data.longitude, data.latitude, data.yaw, data.longitudeError, data.latitudeError, data.hdop, ghostMenu, 'NOT-REQUIRED-WITH-YOUR-VECTOR-TILES-DATA', $('#map'), $('#mapDragDrop'), $('#import-map-button'))
+  let mapLoader = new MapLoader(data.longitude, data.latitude, data.yaw, data.longitudeError, data.latitudeError, data.hdop, data.accelX, data.accelY,
+    ghostMenu, 'NOT-REQUIRED-WITH-YOUR-VECTOR-TILES-DATA', $('#map'), $('#mapDragDrop'), $('#import-map-button'))
 
   let gpsSatellite = new Plain(data.satellites, $('#gps-satellites'))
   let gpsHdop = new Plain(data.hdop, $('#gps-hdop'))
@@ -145,6 +153,10 @@ window.onload = function () {
   let pitchValue = new Plain(data.pitch, $('#orientation-pitch'))
   let rollValue = new Plain(data.roll, $('#orientation-roll'))
 
+  let accelX = new Plain(data.accelX, $('#accel-x'))
+  let accelY = new Plain(data.accelY, $('#accel-y'))
+  let accelZ = new Plain(data.accelZ, $('#accel-z'))
+
   let calSystem = new Plain(data.calSystem, $('#cal-system'))
   let calAccel = new Plain(data.calAccel, $('#cal-accel'))
   let calGyro = new Plain(data.calGyro, $('#cal-gyro'))
@@ -165,7 +177,7 @@ window.onload = function () {
 
   let graphicObjects = [mapLoader, gpsSatellite, gpsHdop, gpsAltitude, longitudeError, latitudeError, altitudeMeter, airSpeedMeter, groundSpeedMeter, cadenceGauge,
     rudderGauge, elevatorGauge, yawOrientation, pitchOrientation, rollOrientation, yawValue, pitchValue, rollValue, calSystem, calAccel, calGyro, calMag,
-    rudderTemp, rudderLoad, rudderVolt, elevatorTemp, elevatorLoad, elevatorVolt, temperature, humidity, airPressure]
+    accelX, accelY, accelZ, rudderTemp, rudderLoad, rudderVolt, elevatorTemp, elevatorLoad, elevatorVolt, temperature, humidity, airPressure]
 
   let logger = new Logger(data, logKeys, $('#log-icon'), $('#log-status'), $('#log-button'), $('#log-filename'), $('#select-log-button'), $('#log-dir'))
   let graphicsManager = new GraphicsManager(graphicObjects, $('#graphic-icon'), $('#graphic-status'), $('#graphic-button'))
