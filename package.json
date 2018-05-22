@@ -1,6 +1,6 @@
 {
   "name": "Ghost",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "App for WASA",
   "main": "src/app.js",
   "repository": {
@@ -24,18 +24,18 @@
   "author": "Kazuki Fujita <kazukifu@gmail.com>",
   "license": "UNLICENSED",
   "devDependencies": {
-    "electron": "^2.0.0",
-    "electron-builder": "^20.13.3",
-    "electron-packager": "^12.0.2",
+    "electron": "^2.0.1",
+    "electron-builder": "^20.13.4",
+    "electron-packager": "^12.1.0",
     "electron-rebuild": "^1.7.3",
-    "mocha": "*",
+    "mocha": "^5.2.0",
     "standard": "*"
   },
   "dependencies": {
     "@mapbox/geojson-area": "*",
     "@mapbox/mbtiles": "*",
     "chart.js": "*",
-    "electron-settings": "*",
+    "electron-settings": "^3.2.0",
     "express": "*",
     "jquery": "*",
     "mapbox-gl": "^0.45.0",
