@@ -43,6 +43,7 @@
     "mv": "*",
     "serialport": "^6.2.0",
     "tone": "^0.12.80",
+    "update-electron-app": "^1.2.0",
     "xbee-api": "*"
   },
   "homepage": "https://github.com/MojamojaK/WASA-ghost",
