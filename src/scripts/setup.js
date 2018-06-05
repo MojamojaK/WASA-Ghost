@@ -56,7 +56,7 @@ window.onload = function () {
     time: new Time(),
     freq: new Freq(),
     altitude: new Value(0, 0.01, 0, 1023, 2),
-    airSpeed: new AirSpeedValue(0, 6.15180146890866e-7, 0, 16255401, 2, 0.449023921989541),
+    airSpeed: new AirSpeedValue(0, 6.15180146890866e-7 * 1.414, 0, 16255401, 2, 0.449023921989541),
     // 風洞試験2回目係数k: 6.12515993890615e-7
     // 風洞試験3回目係数k: 6.15180146890866e-7。
     // 機速受信値は interrupts / kiloseconds。これを meters / second に直す係数k
