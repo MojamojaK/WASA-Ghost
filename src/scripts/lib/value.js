@@ -87,10 +87,10 @@ class AirSpeedValue extends Value {
 
   getValue () {
     let airSpeed = parseFloat((this.value * this.serialMultiplier).toFixed(this.outputFixed))
-    if (airSpeed < 5) {
-      return airSpeed
-    } else {
+    if (airSpeed > 1) {
       return airSpeed + this.serialOffset
+    } else {
+      return airSpeed
     }
   }
 }
