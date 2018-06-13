@@ -1,6 +1,8 @@
 # Ghost
 Ghost is a BADASS Telemetry Monitor Application for Waseda Aeronautics and Space Associations's Human Powered Aircraft Project.
 
+[日本語README](https://github.com/MojamojaK/WASA-Ghost/blob/edit-readme/README_jp.md)
+
 ## Installation
 ```
 //TODO
