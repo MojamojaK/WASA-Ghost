@@ -59,30 +59,29 @@ $ npm run
 
 インストーラを作成するには以下のプログラムを実行するしてください。
 
-Since codes are left unsigned, Operating Systems may initially reject installation.
+ビルドされたアプリケーションは、コードサインしてないので一部OSから実行を拒否されます。
 
-Building Configurations should be in **build-config.json** . See [electron-builder](https://www.electron.build).
+ビルド用の設定は **build-config.json** から行ってください。 詳しくは [electron-builder](https://www.electron.build).
 
-Built installers will be put in the **dist** directory
+ビルドされたインストーラは **dist** ディレクトリに置かれます。
 
 ##### Windows
-This will build a nsis installer for Windows 64bit.
-
-**Will only work on Windows.** May work on Mac with [wine](https://www.winehq.org) installed, but is known to be unreliable.
+Windows 64bit用 nsisインストーラを生成します。
+**Windowsでしか動きません** [wine](https://www.winehq.org)を使えばMacでも使えるかもしれませんが、動作は不安定です。
 ```bash
 $ npm run build_win
 ```
 
 ##### Mac 
-This will build a dmg image for MacOS.
-Works on all plaforms.
+MacOS用dmgイメージを生成します。
+すべてのプラットフォームで実行できます。
 ```bash
 $ npm run build_mac
 ```
 
 ##### Linux
-This will build an AppItem for Linux.
-Works on all plaforms.
+Linux用appImageを生成します。
+すべてのプラットフォームで実行できます。
 ```bash
 $ npm run build_linux
 ```
