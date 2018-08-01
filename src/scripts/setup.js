@@ -1,9 +1,9 @@
 /*
 DONE:
-  clock, gauge, generator, map, menu, meter, orientatton, speech, secret, graphics, serial
+  clock, gauge, generator, map, menu, meter, orientation, speech, secret, graphics, serial, graph, acc
 
 TODO:
-  gps, graph, acc, nofly-zone
+  gps, nofly-zone
 */
 const $ = require('jquery')
 
@@ -56,9 +56,10 @@ window.onload = function () {
     time: new Time(),
     freq: new Freq(),
     altitude: new Value(0, 0.01, 0, 1023, 2),
-    airSpeed: new AirSpeedValue(0, 6.30619595750219E-07, 0, 16255401, 2, 0.108955808944537),
+    airSpeed: new AirSpeedValue(0, 6.30619595750219E-07 * 1.3126, 0, 16255401, 2, 0.108955808944537),
     // 風洞試験2回目係数k: 6.12515993890615e-7
     // 風洞試験3回目係数k: 6.15180146890866e-7。 6.30619595750219E-07
+    // 2018/07/13 追記: 1.3126は2018年第3回TFのログに基づいて算出した補正値 無風だったので対地機速と対気機速で最小二乗法を算出 (間違えなく正確ではないけどマシにはなるはず)
     // 機速受信値は interrupts / kiloseconds。これを meters / second に直す係数k
     // スリット数は100、FALLINGを検知するのでそのまま使う
     // 0.001 (i/ks -> i/s) * p (i/s -> m/s)
@@ -126,10 +127,11 @@ window.onload = function () {
   let freqDisplay = new FreqDisplay(data.time, data.freq, $('#freq-display'))
   let clock = new Clock(data.time, $('#date-display'), $('#time-display'))
 
-  let mapLoader = new MapLoader(data.longitude, data.latitude, data.yaw, data.longitudeError, data.latitudeError, data.hdop, data.accelX, data.accelY,
+  let mapLoader = new MapLoader(data.longitude, data.latitude, data.yaw, data.longitudeError, data.latitudeError, data.hdop, data.accelX, data.accelY, data.groundSpeed, data.gpsCourse,
     ghostMenu, 'NOT-REQUIRED-WITH-YOUR-VECTOR-TILES-DATA', $('#map'), $('#mapDragDrop'), $('#import-map-button'))
 
   let gpsSatellite = new Plain(data.satellites, $('#gps-satellites'))
+  let gpsCourse = new Plain(data.gpsCourse, $('#gps-course'))
   let gpsHdop = new Plain(data.hdop, $('#gps-hdop'))
   let gpsAltitude = new Plain(data.gpsAltitude, $('#gps-altitude'))
   let longitudeError = new Plain(data.longitudeError, $('#gps-longitude-error'))
@@ -173,9 +175,9 @@ window.onload = function () {
   let humidity = new Plain(data.humidity, $('#humidity'))
   let airPressure = new Plain(data.airPressure, $('#air-pressure'))
 
-  let speech = new Speech(data.cadence, $('#speech-icon'), $('#speech-status'), $('#speech-button'))
+  let speech = new Speech(data.groundSpeed, $('#speech-icon'), $('#speech-status'), $('#speech-button'))
 
-  let graphicObjects = [mapLoader, gpsSatellite, gpsHdop, gpsAltitude, longitudeError, latitudeError, altitudeMeter, airSpeedMeter, groundSpeedMeter, cadenceGauge,
+  let graphicObjects = [mapLoader, gpsSatellite, gpsCourse, gpsHdop, gpsAltitude, longitudeError, latitudeError, altitudeMeter, airSpeedMeter, groundSpeedMeter, cadenceGauge,
     rudderGauge, elevatorGauge, yawOrientation, pitchOrientation, rollOrientation, yawValue, pitchValue, rollValue, calSystem, calAccel, calGyro, calMag,
     accelX, accelY, accelZ, rudderTemp, rudderLoad, rudderVolt, elevatorTemp, elevatorLoad, elevatorVolt, temperature, humidity, airPressure]
 

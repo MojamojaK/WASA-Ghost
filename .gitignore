@@ -67,3 +67,6 @@ dist/
 ._package-lock.json
 
 ._.gitignore
+
+# WebStorm
+.idea
