@@ -11,7 +11,8 @@ const settings = require('electron-settings')
 const DegToRad = Math.PI / 180
 
 module.exports.MapLoader = class MapLoader extends EventEmitter {
-  constructor (dataLongitude, dataLatitude, dataYaw, dataLongitudeError, dataLatitudeError, dataHdop, dataAccelX, dataAccelY,
+  constructor (dataLongitude, dataLatitude, dataYaw, dataLongitudeError, dataLatitudeError,
+    dataHdop, dataAccelX, dataAccelY, dataSpeed, dataCourse,
     menu, accessToken, mapNode, mapDragDropNode, mapImportButtonNode) {
     super()
     this.dataLongitude = dataLongitude
@@ -22,6 +23,8 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.dataHdop = dataHdop
     this.dataAccelX = dataAccelX
     this.dataAccelY = dataAccelY
+    this.dataGPSSpeed = dataSpeed
+    this.dataGPSCourse = dataCourse
     this.menu = menu
     this.map = null
     this.mapTilesDirectory = path.join(path.dirname(settings.file()), this.constructor.mapTilesDirName)
@@ -40,8 +43,9 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     this.tileURLs = []
     this.planeSource = null
     this.planeCircle = null
+    this.courseArrowVisible = true
     this.accelArrowVisible = true
-    this.createAccelArrow()
+    this.createArrow()
     this.createPlaneNav()
     this.setupClickEvents()
     this.setupDragDropEvents()
@@ -89,37 +93,55 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
     }
   }
 
-  createAccelArrow () {
+  createArrow () {
     this.arrowWidth = 128
     this.arrowWidthHalf = this.arrowWidth / 2
-    this.arrowData = new Uint8Array(this.arrowWidth * this.arrowWidth * 4)
+    this.arrowPurpleData = new Uint8Array(this.arrowWidth * this.arrowWidth * 4)
+    this.arrowGreenData = new Uint8Array(this.arrowWidth * this.arrowWidth * 4)
     for (let i = 0; i < this.arrowWidth; i++) {
       for (let j = 0; j <= this.arrowWidth; j++) { // タテの線を書く
         let sum = i + j
         if (j >= 61 && j <= 66) {
           let offset = (i * this.arrowWidth + j) * 4
-          this.arrowData[offset + 0] = 255
-          this.arrowData[offset + 1] = 0
-          this.arrowData[offset + 2] = 255
-          this.arrowData[offset + 3] = 255
+          this.arrowPurpleData[offset + 0] = 255
+          this.arrowPurpleData[offset + 1] = 0
+          this.arrowPurpleData[offset + 2] = 255
+          this.arrowPurpleData[offset + 3] = 255
+          this.arrowGreenData[offset + 0] = 0
+          this.arrowGreenData[offset + 1] = 255
+          this.arrowGreenData[offset + 2] = 0
+          this.arrowGreenData[offset + 3] = 255
         } else if (sum >= this.arrowWidthHalf - 3 && sum <= this.arrowWidthHalf + 3) {
           let offset = (i * this.arrowWidth + j) * 4
-          this.arrowData[offset + 0] = 255
-          this.arrowData[offset + 1] = 0
-          this.arrowData[offset + 2] = 255
-          this.arrowData[offset + 3] = 255
+          this.arrowPurpleData[offset + 0] = 255
+          this.arrowPurpleData[offset + 1] = 0
+          this.arrowPurpleData[offset + 2] = 255
+          this.arrowPurpleData[offset + 3] = 255
+          this.arrowGreenData[offset + 0] = 0
+          this.arrowGreenData[offset + 1] = 255
+          this.arrowGreenData[offset + 2] = 0
+          this.arrowGreenData[offset + 3] = 255
           let xFlipOffset = (i * this.arrowWidth + this.arrowWidth - j - 1) * 4
-          this.arrowData[xFlipOffset + 0] = 255
-          this.arrowData[xFlipOffset + 1] = 0
-          this.arrowData[xFlipOffset + 2] = 255
-          this.arrowData[xFlipOffset + 3] = 255
+          this.arrowPurpleData[xFlipOffset + 0] = 255
+          this.arrowPurpleData[xFlipOffset + 1] = 0
+          this.arrowPurpleData[xFlipOffset + 2] = 255
+          this.arrowPurpleData[xFlipOffset + 3] = 255
+          this.arrowGreenData[xFlipOffset + 0] = 0
+          this.arrowGreenData[xFlipOffset + 1] = 255
+          this.arrowGreenData[xFlipOffset + 2] = 0
+          this.arrowGreenData[xFlipOffset + 3] = 255
         }
       }
     }
-    this.arrowImage = {
+    this.courseArrowImage = {
       width: this.arrowWidth,
       height: this.arrowWidth,
-      data: this.arrowData
+      data: this.arrowGreenData
+    }
+    this.accelArrowImage = {
+      width: this.arrowWidth,
+      height: this.arrowWidth,
+      data: this.arrowPurpleData
     }
   }
 
@@ -200,6 +222,26 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
       if (this.map !== null) this.map.setLayoutProperty('planeImage', 'icon-rotate', this.dataYaw.getValue())
     }
 
+    // GPS進行方向の更新
+    if (!(this.dataGPSCourse.isDupe() || this.dataGPSSpeed.isDupe())) {
+      let gpsCourse = this.dataGPSCourse.getValue()
+      let gpsSpeed = this.dataGPSSpeed.getValue()
+      if (this.map !== null) {
+        if (gpsSpeed > 0.1) {
+          if (!this.courseArrowVisible) {
+            this.map.setLayoutProperty('courseArrowImage', 'visibility', 'visible')
+            this.courseArrowVisible = true
+          }
+          this.map.setLayoutProperty('courseArrowImage', 'icon-rotate', gpsCourse)
+        } else {
+          if (this.courseArrowVisible) {
+            this.map.setLayoutProperty('courseArrowImage', 'visibility', 'none')
+            this.courseArrowVisible = false
+          }
+        }
+      }
+    }
+
     // 加速度方向の更新
     if (!(this.dataAccelX.isDupe() || this.dataAccelY.isDupe() || this.dataYaw.isDupe())) {
       let accelX = this.dataAccelX.getValue()
@@ -210,15 +252,15 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
         if (accelY < 0) accelAngle += 180
         if (this.map !== null) {
           if (!this.accelArrowVisible) {
-            this.map.setLayoutProperty('arrowImage', 'visibility', 'visible')
+            this.map.setLayoutProperty('accelArrowImage', 'visibility', 'visible')
             this.accelArrowVisible = true
           }
-          this.map.setLayoutProperty('arrowImage', 'icon-rotate', accelAngle)
+          this.map.setLayoutProperty('accelArrowImage', 'icon-rotate', accelAngle)
         }
       } else {
         if (this.map !== null) {
           if (this.accelArrowVisible) {
-            this.map.setLayoutProperty('arrowImage', 'visibility', 'none')
+            this.map.setLayoutProperty('accelArrowImage', 'visibility', 'none')
             this.accelArrowVisible = false
           }
         }
@@ -414,15 +456,33 @@ module.exports.MapLoader = class MapLoader extends EventEmitter {
       })
       mapLoader.planeSource = mapBoxMap.getSource('planeNav')
 
-      // 加速度矢印の設定・設置
-      if (mapLoader.arrowImage !== null) {
-        mapBoxMap.addImage('arrowImage', mapLoader.arrowImage)
+      // GPS進行方向矢印の設定・設置
+      if (mapLoader.courseArrowImage !== null) {
+        mapBoxMap.addImage('courseArrowImage', mapLoader.courseArrowImage)
         mapBoxMap.addLayer({
-          'id': 'arrowImage',
+          'id': 'courseArrowImage',
           'type': 'symbol',
           'source': 'planeNav',
           'layout': {
-            'icon-image': 'arrowImage',
+            'icon-image': 'courseArrowImage',
+            'icon-size': 1.0,
+            'icon-offset': [0, -63],
+            'icon-rotation-alignment': 'map',
+            'icon-allow-overlap': true,
+            'icon-ignore-placement': true
+          }
+        })
+      }
+
+      // 加速度矢印の設定・設置
+      if (mapLoader.accelArrowImage !== null) {
+        mapBoxMap.addImage('accelArrowImage', mapLoader.accelArrowImage)
+        mapBoxMap.addLayer({
+          'id': 'accelArrowImage',
+          'type': 'symbol',
+          'source': 'planeNav',
+          'layout': {
+            'icon-image': 'accelArrowImage',
             'icon-size': 1.0,
             'icon-offset': [0, -63],
             'icon-rotation-alignment': 'map',

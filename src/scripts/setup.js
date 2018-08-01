@@ -127,10 +127,11 @@ window.onload = function () {
   let freqDisplay = new FreqDisplay(data.time, data.freq, $('#freq-display'))
   let clock = new Clock(data.time, $('#date-display'), $('#time-display'))
 
-  let mapLoader = new MapLoader(data.longitude, data.latitude, data.yaw, data.longitudeError, data.latitudeError, data.hdop, data.accelX, data.accelY,
+  let mapLoader = new MapLoader(data.longitude, data.latitude, data.yaw, data.longitudeError, data.latitudeError, data.hdop, data.accelX, data.accelY, data.groundSpeed, data.gpsCourse,
     ghostMenu, 'NOT-REQUIRED-WITH-YOUR-VECTOR-TILES-DATA', $('#map'), $('#mapDragDrop'), $('#import-map-button'))
 
   let gpsSatellite = new Plain(data.satellites, $('#gps-satellites'))
+  let gpsCourse = new Plain(data.gpsCourse, $('#gps-course'))
   let gpsHdop = new Plain(data.hdop, $('#gps-hdop'))
   let gpsAltitude = new Plain(data.gpsAltitude, $('#gps-altitude'))
   let longitudeError = new Plain(data.longitudeError, $('#gps-longitude-error'))
@@ -176,7 +177,7 @@ window.onload = function () {
 
   let speech = new Speech(data.groundSpeed, $('#speech-icon'), $('#speech-status'), $('#speech-button'))
 
-  let graphicObjects = [mapLoader, gpsSatellite, gpsHdop, gpsAltitude, longitudeError, latitudeError, altitudeMeter, airSpeedMeter, groundSpeedMeter, cadenceGauge,
+  let graphicObjects = [mapLoader, gpsSatellite, gpsCourse, gpsHdop, gpsAltitude, longitudeError, latitudeError, altitudeMeter, airSpeedMeter, groundSpeedMeter, cadenceGauge,
     rudderGauge, elevatorGauge, yawOrientation, pitchOrientation, rollOrientation, yawValue, pitchValue, rollValue, calSystem, calAccel, calGyro, calMag,
     accelX, accelY, accelZ, rudderTemp, rudderLoad, rudderVolt, elevatorTemp, elevatorLoad, elevatorVolt, temperature, humidity, airPressure]
 
