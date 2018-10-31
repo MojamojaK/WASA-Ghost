@@ -5,6 +5,7 @@
   npm   v5.6.0
 
   by Kazuki Fujita 34代 WASA 電装班長
+  //test commit//
 */
 const {app, BrowserWindow, ipcMain, Notification, shell} = require('electron')
 
