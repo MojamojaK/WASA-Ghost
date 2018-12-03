@@ -40,13 +40,8 @@
     "jquery": "*",
     "mapbox-gl": "^0.47.0",
     "mv": "*",
-<<<<<<< HEAD
-    "serialport": "^6.2.0",
-    "tone": "^0.12.80",
-=======
     "serialport": "*",
-    "tone": "^13.2.3",
->>>>>>> 3c93f37f9ade1f4e702e955aa696f1583792293e
+    "tone": "^0.12.80",
     "xbee-api": "*"
   },
   "homepage": "https://github.com/MojamojaK/WASA-ghost",
